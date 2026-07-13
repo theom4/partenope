@@ -106,48 +106,55 @@ const IMG = {
 
 // ─── CATALOG ──────────────────────────────────────────────────────────────────
 const INITIAL_CATALOG = [
-  // ── LATTICINI ──
-  {id:'lat1',cat:'Latticini',name:'Mozzarella di Bufala Campana DOP 125g',price:2.80,unit:'pièce',stock:120,img:IMG.mozzarella,tags:['fromage','mozzarella','frais'],pairsWith:['ali4','ali1','ali6']},
-  {id:'lat2',cat:'Latticini',name:'Burrata Pugliese Crémeuse 200g',price:3.50,unit:'pièce',stock:85,img:IMG.burrata,tags:['fromage','burrata','frais'],pairsWith:['ali4','ali1','pas4']},
-  {id:'lat3',cat:'Latticini',name:'Ricotta di Pecora Artigianale 500g',price:4.20,unit:'pièce',stock:60,img:IMG.ricotta,tags:['fromage','ricotta'],pairsWith:['pas1','pas5','ali3']},
-  {id:'lat4',cat:'Latticini',name:'Gorgonzola DOP Piccante 1kg',price:14.50,unit:'kg',stock:40,img:IMG.gorgonzola,tags:['fromage','bleu'],pairsWith:['bib3','sal4']},
-  {id:'lat5',cat:'Latticini',name:'Mascarpone Lombardo 500g',price:3.90,unit:'pièce',stock:75,img:IMG.mascarpone,tags:['fromage','crème'],pairsWith:['bib4','ali5']},
-  {id:'lat6',cat:'Latticini',name:'Scamorza Affumicata 300g',price:4.80,unit:'pièce',stock:55,img:IMG.scamorza,tags:['fromage','fumé'],pairsWith:['sal1','sal3']},
-  {id:'lat7',cat:'Latticini',name:'Provolone Piccante DOP 500g',price:7.20,unit:'pièce',stock:45,img:IMG.provolone,tags:['fromage'],pairsWith:['sal2','bib2']},
+  // ── LATTICINI (Formaggi e Latte) ──
+  {id:'lat1',cat:'Latticini',name:'Mozzarella di Bufala (250g)',price:3.20,unit:'pièce',stock:120,img:IMG.mozzarella,tags:['fromage','mozzarella','frais'],pairsWith:['ali4','ali1']},
+  {id:'lat2',cat:'Latticini',name:'Burrate di Puglia (200g)',price:4.50,unit:'pièce',stock:85,img:IMG.burrata,tags:['fromage','burrata','frais'],pairsWith:['ali4','pas4']},
+  {id:'lat3',cat:'Latticini',name:'Scamorza Affumicata',price:5.80,unit:'pièce',stock:60,img:IMG.scamorza,tags:['fromage','fumé'],pairsWith:['sal1','sal3']},
+  {id:'lat4',cat:'Latticini',name:'Gorgonzola DOP',price:16.50,unit:'kg',stock:40,img:IMG.gorgonzola,tags:['fromage','bleu'],pairsWith:['bib6']},
+  {id:'lat5',cat:'Latticini',name:'Parmiggiano Reggiano',price:26.00,unit:'kg',stock:30,img:IMG.parmigiano,tags:['fromage','parmesan'],pairsWith:['pas1','pas2','ali4']},
+  {id:'lat6',cat:'Latticini',name:'Ricotta Fresca (1kg)',price:7.20,unit:'pièce',stock:45,img:IMG.ricotta,tags:['fromage','ricotta'],pairsWith:['pas1','ali3']},
+  {id:'lat7',cat:'Latticini',name:'Mascarpone (500g)',price:4.90,unit:'pièce',stock:75,img:IMG.mascarpone,tags:['fromage','crème'],pairsWith:['bib9','ali8']},
+
   // ── SALUMI-FORMAGGI ──
-  {id:'sal1',cat:'Salumi-Formaggi',name:'Prosciutto di Parma DOP 24 mesi 100g',price:3.90,unit:'pièce',stock:200,img:IMG.prosciutto,tags:['charcuterie','jambon'],pairsWith:['lat1','lat2','bib2']},
-  {id:'sal2',cat:'Salumi-Formaggi',name:'Parmigiano Reggiano DOP 24 mesi 1kg',price:24.00,unit:'kg',stock:30,img:IMG.parmigiano,tags:['fromage','parmesan'],pairsWith:['pas1','pas2','ali4']},
-  {id:'sal3',cat:'Salumi-Formaggi',name:'Salame Milano Stagionato 400g',price:6.50,unit:'pièce',stock:90,img:IMG.salame,tags:['charcuterie','salami'],pairsWith:['lat6','bib3']},
-  {id:'sal4',cat:'Salumi-Formaggi',name:'Bresaola della Valtellina IGP 100g',price:4.20,unit:'pièce',stock:110,img:IMG.bresaola,tags:['charcuterie','boeuf'],pairsWith:['lat4','ali2']},
-  {id:'sal5',cat:'Salumi-Formaggi',name:'Mortadella Bologna IGP 500g',price:5.80,unit:'pièce',stock:70,img:IMG.mortadella,tags:['charcuterie'],pairsWith:['pas3','bib1']},
-  {id:'sal6',cat:'Salumi-Formaggi',name:'Speck Alto Adige IGP 150g',price:4.90,unit:'pièce',stock:65,img:IMG.speck,tags:['charcuterie','fumé'],pairsWith:['lat6','bib2']},
-  {id:'sal7',cat:'Salumi-Formaggi',name:'Pancetta Tesa Arrotolata 300g',price:5.20,unit:'pièce',stock:80,img:IMG.pancetta,tags:['charcuterie'],pairsWith:['pas1','ali4']},
-  // ── PASTA ──
-  {id:'pas1',cat:'Pasta',name:'Moreschina Ricca 10kg',price:18.00,unit:'carton',stock:50,img:IMG.pasta,tags:['pasta','farine'],pairsWith:['ali4','ali2','sal2']},
-  {id:'pas2',cat:'Pasta',name:'Fibra Uno 10kg',price:20.00,unit:'carton',stock:45,img:IMG.pasta,tags:['pasta','intégral'],pairsWith:['ali4','ali2','sal2']},
-  {id:'pas3',cat:'Pasta',name:'Granoro Dedicato Penne Rigate N°259 500g',price:25.00,unit:'carton',stock:60,img:IMG.penne,tags:['pasta','penne'],pairsWith:['ali4','ali3','sal2']},
-  {id:'pas4',cat:'Pasta',name:'Granoro Dedicato Rigatoni N°183 500g',price:25.00,unit:'carton',stock:55,img:IMG.rigatoni,tags:['pasta','rigatoni'],pairsWith:['ali4','ali3']},
-  {id:'pas5',cat:'Pasta',name:'Tortiglioni Ferdinando II IGP 500g',price:3.25,unit:'pièce',stock:150,img:IMG.pasta,tags:['pasta'],pairsWith:['ali4','lat3']},
-  {id:'pas6',cat:'Pasta',name:'Spaghetti PGI Gragnano 500g Ferdinando II',price:3.25,unit:'pièce',stock:180,img:IMG.spaghetti,tags:['pasta','spaghetti'],pairsWith:['ali4','sal7','sal2']},
-  {id:'pas7',cat:'Pasta',name:'Penne Rigate N°41 De Cecco (carton)',price:38.40,unit:'carton',stock:35,img:IMG.penne,tags:['pasta','dececo'],pairsWith:['ali4','ali2','sal2']},
-  {id:'pas8',cat:'Pasta',name:'Tagliatelle N°203 De Cecco',price:19.20,unit:'carton',stock:40,img:IMG.tagliatelle,tags:['pasta','tagliatelle'],pairsWith:['sal1','ali5','sal2']},
-  // ── BIBITE ──
-  {id:'bib1',cat:'Bibite',name:'San Pellegrino Sparkling 1L (caisse×12)',price:18.00,unit:'caisse',stock:80,img:IMG.sanpellegrino,tags:['eau','pétillante','boisson'],pairsWith:['lat1','sal1']},
-  {id:'bib2',cat:'Bibite',name:'Prosecco DOC Valdobbiadene 75cl',price:12.50,unit:'pièce',stock:120,img:IMG.prosecco,tags:['vin','pétillant','prosecco'],pairsWith:['sal1','lat1','lat2']},
-  {id:'bib3',cat:'Bibite',name:'Chianti Classico DOCG 75cl',price:15.80,unit:'pièce',stock:95,img:IMG.vino,tags:['vin','rouge'],pairsWith:['sal2','sal3','lat4']},
-  {id:'bib4',cat:'Bibite',name:'Limoncello di Sorrento IGP 50cl',price:16.90,unit:'pièce',stock:60,img:IMG.limoncello,tags:['liqueur','citron'],pairsWith:['lat5','ali5']},
-  {id:'bib5',cat:'Bibite',name:'Acqua Panna Still 1L (caisse×12)',price:14.40,unit:'caisse',stock:100,img:IMG.acqua,tags:['eau','plate'],pairsWith:['sal1','lat1']},
-  {id:'bib6',cat:'Bibite',name:'Amaro Montenegro 70cl',price:19.50,unit:'pièce',stock:45,img:IMG.amaro,tags:['digestif','liqueur'],pairsWith:['lat5','ali5']},
-  {id:'bib7',cat:'Bibite',name:'Aranciata San Pellegrino 33cl (caisse×24)',price:24.00,unit:'caisse',stock:70,img:IMG.aranciata,tags:['jus','orange','pétillant'],pairsWith:['bib1','sal5']},
+  {id:'sal1',cat:'Salumi-Formaggi',name:'Prosciutto di Parma 18M',price:32.00,unit:'kg',stock:20,img:IMG.prosciutto,tags:['charcuterie','jambon'],pairsWith:['lat1','lat2','bib7']},
+  {id:'sal2',cat:'Salumi-Formaggi',name:'Guanciale al Pepe',price:18.50,unit:'kg',stock:35,img:IMG.pancetta,tags:['charcuterie','porc'],pairsWith:['pas1','ali4']},
+  {id:'sal3',cat:'Salumi-Formaggi',name:'Salame Napoli',price:15.50,unit:'kg',stock:90,img:IMG.salame,tags:['charcuterie','salami'],pairsWith:['lat3','bib6']},
+  {id:'sal4',cat:'Salumi-Formaggi',name:'Bresaola Punta d\'Anca',price:38.00,unit:'kg',stock:15,img:IMG.bresaola,tags:['charcuterie','boeuf'],pairsWith:['lat4','ali2']},
+  {id:'sal5',cat:'Salumi-Formaggi',name:'Mortadella Pistacchio',price:14.80,unit:'kg',stock:40,img:IMG.mortadella,tags:['charcuterie'],pairsWith:['pas3','bib1']},
+  {id:'sal6',cat:'Salumi-Formaggi',name:'Speck di Montagna',price:19.90,unit:'kg',stock:65,img:IMG.speck,tags:['charcuterie','fumé'],pairsWith:['lat3','bib7']},
+  {id:'sal7',cat:'Salumi-Formaggi',name:'Nduja Calabrese',price:22.00,unit:'kg',stock:25,img:IMG.nduja,tags:['charcuterie','épicé'],pairsWith:['pas1','lat1','ali4']},
+  {id:'sal8',cat:'Salumi-Formaggi',name:'Pancetta Arrotolata al Pepe',price:17.20,unit:'kg',stock:30,img:IMG.pancetta,tags:['charcuterie'],pairsWith:['pas1','ali4']},
+
+  // ── PASTA & FARINE ──
+  {id:'pas1',cat:'Pasta',name:'Spaghetti Granoro (500g)',price:1.20,unit:'pièce',stock:250,img:IMG.spaghetti,tags:['pasta','spaghetti'],pairsWith:['ali4','sal2','lat5']},
+  {id:'pas2',cat:'Pasta',name:'Penne Rigate Granoro (500g)',price:1.20,unit:'pièce',stock:200,img:IMG.penne,tags:['pasta','penne'],pairsWith:['ali4','ali3']},
+  {id:'pas3',cat:'Pasta',name:'Tagliatelle Nido (500g)',price:2.10,unit:'pièce',stock:150,img:IMG.tagliatelle,tags:['pasta','tagliatelle'],pairsWith:['sal1','ali6','lat5']},
+  {id:'pas4',cat:'Pasta',name:'Ravioli al Tartufo (Fresca)',price:4.50,unit:'pièce',stock:45,img:IMG.pasta,tags:['pasta','frais','truffe'],pairsWith:['ali6','lat5']},
+  {id:'pas5',cat:'Pasta',name:'Gnocchi Nonna Irene',price:2.80,unit:'pièce',stock:80,img:IMG.pasta,tags:['pasta','gnocchi'],pairsWith:['ali4','lat1']},
+  {id:'pas6',cat:'Pasta',name:'Caputo Blu Pizzeria (25kg)',price:35.00,unit:'sac',stock:40,img:IMG.pasta,tags:['farine','pizza'],pairsWith:['lat1','ali4','ali2']},
+
+  // ── BIBITE (Vini, Birre, Acqua) ──
+  {id:'bib1',cat:'Bibite',name:'San Pellegrino (Caisse 12x1L)',price:16.00,unit:'caisse',stock:80,img:IMG.sanpellegrino,tags:['eau','pétillante'],pairsWith:['lat1','sal1']},
+  {id:'bib2',cat:'Bibite',name:'Acqua Panna (Caisse 12x1L)',price:14.00,unit:'caisse',stock:100,img:IMG.acqua,tags:['eau','plate'],pairsWith:['sal1','lat1']},
+  {id:'bib3',cat:'Bibite',name:'Limonata Siciliana',price:2.50,unit:'pièce',stock:120,img:IMG.limoncello,tags:['soda','citron'],pairsWith:['sal5']},
+  {id:'bib4',cat:'Bibite',name:'Peroni (33ml)',price:1.80,unit:'pièce',stock:300,img:IMG.acqua,tags:['bière'],pairsWith:['pas6','sal1']},
+  {id:'bib5',cat:'Bibite',name:'Ichnusa (33ml)',price:2.20,unit:'pièce',stock:250,img:IMG.acqua,tags:['bière'],pairsWith:['pas6','sal3']},
+  {id:'bib6',cat:'Bibite',name:'Chianti DOC (75cl)',price:14.50,unit:'bouteille',stock:95,img:IMG.vino,tags:['vin','rouge'],pairsWith:['lat5','sal3','lat4']},
+  {id:'bib7',cat:'Bibite',name:'Proseco DOC (75cl)',price:12.00,unit:'bouteille',stock:120,img:IMG.prosecco,tags:['vin','pétillant','prosecco'],pairsWith:['sal1','lat1','lat2']},
+  {id:'bib8',cat:'Bibite',name:'Aperol (1L)',price:18.90,unit:'bouteille',stock:60,img:IMG.aranciata,tags:['aperitif'],pairsWith:['bib7','bib1']},
+  {id:'bib9',cat:'Bibite',name:'Limoncello',price:15.50,unit:'bouteille',stock:45,img:IMG.limoncello,tags:['digestif','citron'],pairsWith:['lat7']},
+
   // ── PRODOTTI ALIMENTARI ──
-  {id:'ali1',cat:'Prodotti Alimentari',name:'Tomates San Marzano DOP Pelées 400g',price:3.20,unit:'pièce',stock:200,img:IMG.sanmarzano,tags:['tomate','conserve'],pairsWith:['lat1','pas6','ali2','sal2']},
-  {id:'ali2',cat:'Prodotti Alimentari',name:"Huile d'Olive Extra Vierge Sicilia IGP 750ml",price:12.80,unit:'pièce',stock:90,img:IMG.olio,tags:['huile','olive'],pairsWith:['lat1','lat2','sal4','pas6']},
-  {id:'ali3',cat:'Prodotti Alimentari',name:'Pesto alla Genovese Barilla 190g',price:3.90,unit:'pièce',stock:130,img:IMG.pesto,tags:['pesto','sauce'],pairsWith:['pas3','pas6','sal2']},
-  {id:'ali4',cat:'Prodotti Alimentari',name:'Passata di Pomodoro Mutti 700g',price:2.80,unit:'pièce',stock:250,img:IMG.passata,tags:['tomate','sauce'],pairsWith:['pas1','pas6','pas3','sal2']},
-  {id:'ali5',cat:'Prodotti Alimentari',name:'Aceto Balsamico di Modena IGP 250ml',price:8.50,unit:'pièce',stock:75,img:IMG.aceto,tags:['vinaigre','balsamique'],pairsWith:['lat2','sal4','sal1']},
-  {id:'ali6',cat:'Prodotti Alimentari',name:'Crème de Truffe Noire Tartufo 80g',price:24.90,unit:'pièce',stock:25,img:IMG.tartufo,tags:['truffe','premium'],pairsWith:['pas8','lat2','bib3']},
-  {id:'ali7',cat:'Prodotti Alimentari',name:'Caponata Siciliana Aubergines Confites 280g',price:4.80,unit:'pièce',stock:85,img:IMG.caponata,tags:['légume','conserve'],pairsWith:['sal1','lat6','bib3']},
-  {id:'ali8',cat:'Prodotti Alimentari',name:'Nduja Calabrese Épicée 200g',price:6.90,unit:'pièce',stock:55,img:IMG.nduja,tags:['charcuterie','épicé'],pairsWith:['pas3','lat1','ali4']},
+  {id:'ali1',cat:'Prodotti Alimentari',name:'Pomodori San Marzano (6x2.5kg)',price:34.00,unit:'carton',stock:50,img:IMG.sanmarzano,tags:['tomate','conserve'],pairsWith:['lat1','pas6','ali2']},
+  {id:'ali2',cat:'Prodotti Alimentari',name:'Olio Extra Vergine Luglio (5L)',price:45.00,unit:'bidon',stock:30,img:IMG.olio,tags:['huile','olive'],pairsWith:['lat1','lat2','sal4','pas6']},
+  {id:'ali3',cat:'Prodotti Alimentari',name:'Pesto Pistacchio Top Food',price:12.50,unit:'pot',stock:45,img:IMG.pesto,tags:['pesto','pistache'],pairsWith:['pas1','pas3']},
+  {id:'ali4',cat:'Prodotti Alimentari',name:'Polpa di Pomodoro Strianese (3x4kg)',price:28.00,unit:'carton',stock:60,img:IMG.passata,tags:['tomate','sauce'],pairsWith:['pas1','pas6','pas2','lat5']},
+  {id:'ali5',cat:'Prodotti Alimentari',name:'Aceto Balsamico (500ml)',price:9.50,unit:'bouteille',stock:75,img:IMG.aceto,tags:['vinaigre','balsamique'],pairsWith:['lat2','sal4','sal1']},
+  {id:'ali6',cat:'Prodotti Alimentari',name:'Crema Tartufo',price:22.00,unit:'pot',stock:25,img:IMG.tartufo,tags:['truffe','premium'],pairsWith:['pas3','lat2','bib6']},
+  {id:'ali7',cat:'Prodotti Alimentari',name:'Carciofi Interi Grigliati in Olio',price:14.80,unit:'bocal',stock:85,img:IMG.caponata,tags:['légume','conserve'],pairsWith:['sal1','lat3','bib6']},
+  {id:'ali8',cat:'Prodotti Alimentari',name:'Olive Taggiasche',price:16.90,unit:'bocal',stock:55,img:IMG.olio,tags:['olive','conserve'],pairsWith:['pas1','lat1']},
+  {id:'ali9',cat:'Prodotti Alimentari',name:'Nutella Ferrero (3kg)',price:24.00,unit:'seau',stock:40,img:IMG.mascarpone,tags:['chocolat','dessert'],pairsWith:['pas6']},
+  {id:'ali10',cat:'Prodotti Alimentari',name:'Cannoli Sicilia Grandi (6pz)',price:12.00,unit:'boîte',stock:35,img:IMG.ricotta,tags:['dessert','sicilia'],pairsWith:['bib9']}
 ];
 
 const CATEGORIES=['Tous','Latticini','Salumi-Formaggi','Pasta','Bibite','Prodotti Alimentari'];
@@ -173,12 +180,12 @@ function generateSeedOrders(catalog){
   const now=Date.now();
   const day=86400000;
   return [
-    {id:'seed1001',date:new Date(now-3*day).toISOString(),items:[{...catalog.find(p=>p.id==='lat1'),qty:20},{...catalog.find(p=>p.id==='sal1'),qty:10},{...catalog.find(p=>p.id==='pas6'),qty:15},{...catalog.find(p=>p.id==='ali4'),qty:12}],total:245.50,status:'livree',restaurantId:'rest1',pointsEarned:24,deliveryProgress:1},
-    {id:'seed1002',date:new Date(now-2*day).toISOString(),items:[{...catalog.find(p=>p.id==='sal2'),qty:3},{...catalog.find(p=>p.id==='bib3'),qty:6},{...catalog.find(p=>p.id==='ali2'),qty:4},{...catalog.find(p=>p.id==='lat2'),qty:8}],total:232.40,status:'livree',restaurantId:'rest2',pointsEarned:23,deliveryProgress:1},
-    {id:'seed1003',date:new Date(now-day).toISOString(),items:[{...catalog.find(p=>p.id==='pas7'),qty:4},{...catalog.find(p=>p.id==='ali1'),qty:30},{...catalog.find(p=>p.id==='sal7'),qty:6},{...catalog.find(p=>p.id==='bib1'),qty:3}],total:353.80,status:'en_preparation',restaurantId:'rest3',pointsEarned:35,deliveryProgress:0},
-    {id:'seed1004',date:new Date(now-day/2).toISOString(),items:[{...catalog.find(p=>p.id==='lat1'),qty:15},{...catalog.find(p=>p.id==='lat2'),qty:10},{...catalog.find(p=>p.id==='ali4'),qty:20},{...catalog.find(p=>p.id==='pas6'),qty:25}],total:215.75,status:'en_livraison',restaurantId:'rest1',pointsEarned:21,deliveryProgress:0.35},
-    {id:'seed1005',date:new Date(now-day/4).toISOString(),items:[{...catalog.find(p=>p.id==='bib2'),qty:12},{...catalog.find(p=>p.id==='bib3'),qty:6},{...catalog.find(p=>p.id==='sal1'),qty:20},{...catalog.find(p=>p.id==='sal3'),qty:8}],total:397.80,status:'en_livraison',restaurantId:'rest2',pointsEarned:39,deliveryProgress:0.6},
-    {id:'seed1006',date:new Date(now-3600000).toISOString(),items:[{...catalog.find(p=>p.id==='pas3'),qty:5},{...catalog.find(p=>p.id==='ali6'),qty:3},{...catalog.find(p=>p.id==='bib4'),qty:4},{...catalog.find(p=>p.id==='lat4'),qty:2}],total:325.90,status:'recue',restaurantId:'rest3',pointsEarned:32,deliveryProgress:0},
+    {id:'seed1001',date:new Date(now-3*day).toISOString(),items:[{...catalog.find(p=>p.id==='lat1'),qty:20},{...catalog.find(p=>p.id==='sal1'),qty:5},{...catalog.find(p=>p.id==='pas1'),qty:30},{...catalog.find(p=>p.id==='ali4'),qty:5}],total:384.00,status:'livree',restaurantId:'rest1',pointsEarned:38,deliveryProgress:1},
+    {id:'seed1002',date:new Date(now-2*day).toISOString(),items:[{...catalog.find(p=>p.id==='lat5'),qty:3},{...catalog.find(p=>p.id==='bib6'),qty:12},{...catalog.find(p=>p.id==='ali2'),qty:4},{...catalog.find(p=>p.id==='lat2'),qty:10}],total:477.00,status:'livree',restaurantId:'rest2',pointsEarned:47,deliveryProgress:1},
+    {id:'seed1003',date:new Date(now-day).toISOString(),items:[{...catalog.find(p=>p.id==='pas6'),qty:10},{...catalog.find(p=>p.id==='ali1'),qty:8},{...catalog.find(p=>p.id==='sal7'),qty:4},{...catalog.find(p=>p.id==='bib4'),qty:48}],total:796.40,status:'en_preparation',restaurantId:'rest3',pointsEarned:79,deliveryProgress:0},
+    {id:'seed1004',date:new Date(now-day/2).toISOString(),items:[{...catalog.find(p=>p.id==='lat1'),qty:15},{...catalog.find(p=>p.id==='lat2'),qty:10},{...catalog.find(p=>p.id==='ali4'),qty:4},{...catalog.find(p=>p.id==='pas1'),qty:40}],total:253.00,status:'en_livraison',restaurantId:'rest1',pointsEarned:25,deliveryProgress:0.35},
+    {id:'seed1005',date:new Date(now-day/4).toISOString(),items:[{...catalog.find(p=>p.id==='bib7'),qty:24},{...catalog.find(p=>p.id==='bib6'),qty:12},{...catalog.find(p=>p.id==='sal1'),qty:8},{...catalog.find(p=>p.id==='sal3'),qty:6}],total:811.00,status:'en_livraison',restaurantId:'rest2',pointsEarned:81,deliveryProgress:0.6},
+    {id:'seed1006',date:new Date(now-3600000).toISOString(),items:[{...catalog.find(p=>p.id==='pas4'),qty:10},{...catalog.find(p=>p.id==='ali6'),qty:4},{...catalog.find(p=>p.id==='bib9'),qty:2},{...catalog.find(p=>p.id==='lat4'),qty:2}],total:197.00,status:'recue',restaurantId:'rest3',pointsEarned:19,deliveryProgress:0},
   ];
 }
 
