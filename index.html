@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>Partenope — Distribution Alimentaire Italienne</title>
+<meta name="description" content="Partenope, votre distributeur de produits alimentaires italiens de qualité pour restaurants à Paris et en Île-de-France."/>
+<meta name="theme-color" content="#C0392B"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{partenope:{red:'#C0392B','red-dark':'#96281B','red-light':'#E74C3C',green:'#27AE60','green-dark':'#1E8449',gold:'#F39C12',cream:'#FDF6EC','warm-white':'#FEFEFE',dark:'#1A1A2E','gray-warm':'#6B6B6B'}},fontFamily:{serif:['Playfair Display','serif'],sans:['Inter','sans-serif']},animation:{'slide-in':'slideIn .3s ease-out','fade-in':'fadeIn .4s ease-out','bounce-subtle':'bounceSubtle .5s ease-in-out'},keyframes:{slideIn:{from:{transform:'translateX(100%)'},to:{transform:'translateX(0)'}},fadeIn:{from:{opacity:0,transform:'translateY(10px)'},to:{opacity:1,transform:'translateY(0)'}},bounceSubtle:{'0%,100%':{transform:'scale(1)'},'50%':{transform:'scale(1.05)'}}}}}}
+</script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:#FDF6EC;margin:0;overflow-x:hidden}
+.font-serif{font-family:'Playfair Display',serif}
+.leaflet-container{z-index:1!important}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#C0392B;border-radius:2px}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideInUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes cartPulse{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes notifIn{from{transform:translateX(110%)}to{transform:translateX(0)}}
+.animate-slide-right{animation:slideInRight .35s ease-out}
+.animate-slide-up{animation:slideInUp .3s ease-out}
+.cart-pulse{animation:cartPulse .4s ease-in-out}
+.notif-in{animation:notifIn .35s ease-out forwards}
+.progress-bar{transition:width .8s ease-in-out}
+.product-card{transition:all .25s ease}
+@media(hover:hover){.product-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.12)}}
+/* Mobile bottom nav */
+.bottom-nav{padding-bottom:env(safe-area-inset-bottom,0)}
+/* Product image placeholder */
+.prod-img-placeholder{display:flex;align-items:center;justify-content:center;font-size:3rem;background:linear-gradient(135deg,#fff5f5,#fef3e2)}
+/* Horizontal scroll no-bar */
+.scroll-hide::-webkit-scrollbar{display:none}
+.scroll-hide{-ms-overflow-style:none;scrollbar-width:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef,useCallback,useMemo}=React;
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+const S={
+  get:(k,d=null)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+};
+
+// ─── PRODUCT IMAGE GENERATOR (SVG data URI with emoji + gradient) ────────────
+function makeImg(emoji, color1, color2) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${color1}"/><stop offset="100%" stop-color="${color2}"/></linearGradient></defs>
+    <rect width="300" height="300" fill="url(#g)"/>
+    <text x="150" y="165" font-size="100" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
+  </svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+const IMG = {
+  mozzarella: makeImg('🧀','#fff8e1','#ffecb3'),
+  burrata: makeImg('🥛','#fafafa','#f5f5f5'),
+  ricotta: makeImg('🍚','#fff3e0','#ffe0b2'),
+  gorgonzola: makeImg('🧀','#e3f2fd','#bbdefb'),
+  mascarpone: makeImg('🍮','#fce4ec','#f8bbd0'),
+  scamorza: makeImg('🧀','#fff8e1','#ffe082'),
+  provolone: makeImg('🧀','#fff9c4','#fff176'),
+  prosciutto: makeImg('🥩','#fbe9e7','#ffccbc'),
+  parmigiano: makeImg('🧀','#fff8e1','#ffd54f'),
+  salame: makeImg('🍖','#ffebee','#ef9a9a'),
+  bresaola: makeImg('🥩','#fce4ec','#e57373'),
+  mortadella: makeImg('🌭','#f3e5f5','#ce93d8'),
+  speck: makeImg('🥓','#efebe9','#bcaaa4'),
+  pancetta: makeImg('🥓','#fff3e0','#ffcc80'),
+  pasta: makeImg('🍝','#fff3e0','#ffe0b2'),
+  spaghetti: makeImg('🍝','#fffde7','#fff9c4'),
+  penne: makeImg('🍝','#fff8e1','#ffecb3'),
+  tagliatelle: makeImg('🍝','#fbe9e7','#ffccbc'),
+  rigatoni: makeImg('🍝','#fff3e0','#ffe082'),
+  sanpellegrino: makeImg('💧','#e3f2fd','#90caf9'),
+  prosecco: makeImg('🍾','#f3e5f5','#e1bee7'),
+  vino: makeImg('🍷','#fce4ec','#ef9a9a'),
+  limoncello: makeImg('🍋','#fffde7','#fff59d'),
+  acqua: makeImg('💧','#e0f7fa','#80deea'),
+  amaro: makeImg('🥃','#efebe9','#a1887f'),
+  aranciata: makeImg('🍊','#fff3e0','#ffb74d'),
+  sanmarzano: makeImg('🍅','#ffebee','#ef5350'),
+  olio: makeImg('🫒','#e8f5e9','#a5d6a7'),
+  pesto: makeImg('🌿','#e8f5e9','#81c784'),
+  passata: makeImg('🍅','#ffcdd2','#e57373'),
+  aceto: makeImg('🫗','#efebe9','#bcaaa4'),
+  tartufo: makeImg('🍄','#efebe9','#8d6e63'),
+  caponata: makeImg('🍆','#f3e5f5','#ba68c8'),
+  nduja: makeImg('🌶️','#ffebee','#e53935'),
+};
+
+// ─── CATALOG ──────────────────────────────────────────────────────────────────
+const INITIAL_CATALOG = [
+  // ── LATTICINI ──
+  {id:'lat1',cat:'Latticini',name:'Mozzarella di Bufala Campana DOP 125g',price:2.80,unit:'pièce',stock:120,img:IMG.mozzarella,tags:['fromage','mozzarella','frais'],pairsWith:['ali4','ali1','ali6']},
+  {id:'lat2',cat:'Latticini',name:'Burrata Pugliese Crémeuse 200g',price:3.50,unit:'pièce',stock:85,img:IMG.burrata,tags:['fromage','burrata','frais'],pairsWith:['ali4','ali1','pas4']},
+  {id:'lat3',cat:'Latticini',name:'Ricotta di Pecora Artigianale 500g',price:4.20,unit:'pièce',stock:60,img:IMG.ricotta,tags:['fromage','ricotta'],pairsWith:['pas1','pas5','ali3']},
+  {id:'lat4',cat:'Latticini',name:'Gorgonzola DOP Piccante 1kg',price:14.50,unit:'kg',stock:40,img:IMG.gorgonzola,tags:['fromage','bleu'],pairsWith:['bib3','sal4']},
+  {id:'lat5',cat:'Latticini',name:'Mascarpone Lombardo 500g',price:3.90,unit:'pièce',stock:75,img:IMG.mascarpone,tags:['fromage','crème'],pairsWith:['bib4','ali5']},
+  {id:'lat6',cat:'Latticini',name:'Scamorza Affumicata 300g',price:4.80,unit:'pièce',stock:55,img:IMG.scamorza,tags:['fromage','fumé'],pairsWith:['sal1','sal3']},
+  {id:'lat7',cat:'Latticini',name:'Provolone Piccante DOP 500g',price:7.20,unit:'pièce',stock:45,img:IMG.provolone,tags:['fromage'],pairsWith:['sal2','bib2']},
+  // ── SALUMI-FORMAGGI ──
+  {id:'sal1',cat:'Salumi-Formaggi',name:'Prosciutto di Parma DOP 24 mesi 100g',price:3.90,unit:'pièce',stock:200,img:IMG.prosciutto,tags:['charcuterie','jambon'],pairsWith:['lat1','lat2','bib2']},
+  {id:'sal2',cat:'Salumi-Formaggi',name:'Parmigiano Reggiano DOP 24 mesi 1kg',price:24.00,unit:'kg',stock:30,img:IMG.parmigiano,tags:['fromage','parmesan'],pairsWith:['pas1','pas2','ali4']},
+  {id:'sal3',cat:'Salumi-Formaggi',name:'Salame Milano Stagionato 400g',price:6.50,unit:'pièce',stock:90,img:IMG.salame,tags:['charcuterie','salami'],pairsWith:['lat6','bib3']},
+  {id:'sal4',cat:'Salumi-Formaggi',name:'Bresaola della Valtellina IGP 100g',price:4.20,unit:'pièce',stock:110,img:IMG.bresaola,tags:['charcuterie','boeuf'],pairsWith:['lat4','ali2']},
+  {id:'sal5',cat:'Salumi-Formaggi',name:'Mortadella Bologna IGP 500g',price:5.80,unit:'pièce',stock:70,img:IMG.mortadella,tags:['charcuterie'],pairsWith:['pas3','bib1']},
+  {id:'sal6',cat:'Salumi-Formaggi',name:'Speck Alto Adige IGP 150g',price:4.90,unit:'pièce',stock:65,img:IMG.speck,tags:['charcuterie','fumé'],pairsWith:['lat6','bib2']},
+  {id:'sal7',cat:'Salumi-Formaggi',name:'Pancetta Tesa Arrotolata 300g',price:5.20,unit:'pièce',stock:80,img:IMG.pancetta,tags:['charcuterie'],pairsWith:['pas1','ali4']},
+  // ── PASTA ──
+  {id:'pas1',cat:'Pasta',name:'Moreschina Ricca 10kg',price:18.00,unit:'carton',stock:50,img:IMG.pasta,tags:['pasta','farine'],pairsWith:['ali4','ali2','sal2']},
+  {id:'pas2',cat:'Pasta',name:'Fibra Uno 10kg',price:20.00,unit:'carton',stock:45,img:IMG.pasta,tags:['pasta','intégral'],pairsWith:['ali4','ali2','sal2']},
+  {id:'pas3',cat:'Pasta',name:'Granoro Dedicato Penne Rigate N°259 500g',price:25.00,unit:'carton',stock:60,img:IMG.penne,tags:['pasta','penne'],pairsWith:['ali4','ali3','sal2']},
+  {id:'pas4',cat:'Pasta',name:'Granoro Dedicato Rigatoni N°183 500g',price:25.00,unit:'carton',stock:55,img:IMG.rigatoni,tags:['pasta','rigatoni'],pairsWith:['ali4','ali3']},
+  {id:'pas5',cat:'Pasta',name:'Tortiglioni Ferdinando II IGP 500g',price:3.25,unit:'pièce',stock:150,img:IMG.pasta,tags:['pasta'],pairsWith:['ali4','lat3']},
+  {id:'pas6',cat:'Pasta',name:'Spaghetti PGI Gragnano 500g Ferdinando II',price:3.25,unit:'pièce',stock:180,img:IMG.spaghetti,tags:['pasta','spaghetti'],pairsWith:['ali4','sal7','sal2']},
+  {id:'pas7',cat:'Pasta',name:'Penne Rigate N°41 De Cecco (carton)',price:38.40,unit:'carton',stock:35,img:IMG.penne,tags:['pasta','dececo'],pairsWith:['ali4','ali2','sal2']},
+  {id:'pas8',cat:'Pasta',name:'Tagliatelle N°203 De Cecco',price:19.20,unit:'carton',stock:40,img:IMG.tagliatelle,tags:['pasta','tagliatelle'],pairsWith:['sal1','ali5','sal2']},
+  // ── BIBITE ──
+  {id:'bib1',cat:'Bibite',name:'San Pellegrino Sparkling 1L (caisse×12)',price:18.00,unit:'caisse',stock:80,img:IMG.sanpellegrino,tags:['eau','pétillante','boisson'],pairsWith:['lat1','sal1']},
+  {id:'bib2',cat:'Bibite',name:'Prosecco DOC Valdobbiadene 75cl',price:12.50,unit:'pièce',stock:120,img:IMG.prosecco,tags:['vin','pétillant','prosecco'],pairsWith:['sal1','lat1','lat2']},
+  {id:'bib3',cat:'Bibite',name:'Chianti Classico DOCG 75cl',price:15.80,unit:'pièce',stock:95,img:IMG.vino,tags:['vin','rouge'],pairsWith:['sal2','sal3','lat4']},
+  {id:'bib4',cat:'Bibite',name:'Limoncello di Sorrento IGP 50cl',price:16.90,unit:'pièce',stock:60,img:IMG.limoncello,tags:['liqueur','citron'],pairsWith:['lat5','ali5']},
+  {id:'bib5',cat:'Bibite',name:'Acqua Panna Still 1L (caisse×12)',price:14.40,unit:'caisse',stock:100,img:IMG.acqua,tags:['eau','plate'],pairsWith:['sal1','lat1']},
+  {id:'bib6',cat:'Bibite',name:'Amaro Montenegro 70cl',price:19.50,unit:'pièce',stock:45,img:IMG.amaro,tags:['digestif','liqueur'],pairsWith:['lat5','ali5']},
+  {id:'bib7',cat:'Bibite',name:'Aranciata San Pellegrino 33cl (caisse×24)',price:24.00,unit:'caisse',stock:70,img:IMG.aranciata,tags:['jus','orange','pétillant'],pairsWith:['bib1','sal5']},
+  // ── PRODOTTI ALIMENTARI ──
+  {id:'ali1',cat:'Prodotti Alimentari',name:'Tomates San Marzano DOP Pelées 400g',price:3.20,unit:'pièce',stock:200,img:IMG.sanmarzano,tags:['tomate','conserve'],pairsWith:['lat1','pas6','ali2','sal2']},
+  {id:'ali2',cat:'Prodotti Alimentari',name:"Huile d'Olive Extra Vierge Sicilia IGP 750ml",price:12.80,unit:'pièce',stock:90,img:IMG.olio,tags:['huile','olive'],pairsWith:['lat1','lat2','sal4','pas6']},
+  {id:'ali3',cat:'Prodotti Alimentari',name:'Pesto alla Genovese Barilla 190g',price:3.90,unit:'pièce',stock:130,img:IMG.pesto,tags:['pesto','sauce'],pairsWith:['pas3','pas6','sal2']},
+  {id:'ali4',cat:'Prodotti Alimentari',name:'Passata di Pomodoro Mutti 700g',price:2.80,unit:'pièce',stock:250,img:IMG.passata,tags:['tomate','sauce'],pairsWith:['pas1','pas6','pas3','sal2']},
+  {id:'ali5',cat:'Prodotti Alimentari',name:'Aceto Balsamico di Modena IGP 250ml',price:8.50,unit:'pièce',stock:75,img:IMG.aceto,tags:['vinaigre','balsamique'],pairsWith:['lat2','sal4','sal1']},
+  {id:'ali6',cat:'Prodotti Alimentari',name:'Crème de Truffe Noire Tartufo 80g',price:24.90,unit:'pièce',stock:25,img:IMG.tartufo,tags:['truffe','premium'],pairsWith:['pas8','lat2','bib3']},
+  {id:'ali7',cat:'Prodotti Alimentari',name:'Caponata Siciliana Aubergines Confites 280g',price:4.80,unit:'pièce',stock:85,img:IMG.caponata,tags:['légume','conserve'],pairsWith:['sal1','lat6','bib3']},
+  {id:'ali8',cat:'Prodotti Alimentari',name:'Nduja Calabrese Épicée 200g',price:6.90,unit:'pièce',stock:55,img:IMG.nduja,tags:['charcuterie','épicé'],pairsWith:['pas3','lat1','ali4']},
+];
+
+const CATEGORIES=['Tous','Latticini','Salumi-Formaggi','Pasta','Bibite','Prodotti Alimentari'];
+const CAT_ICONS={Latticini:'🧀','Salumi-Formaggi':'🍖',Pasta:'🍝',Bibite:'🍾','Prodotti Alimentari':'🫙',Tous:'🛒'};
+
+const LOYALTY_LEVELS=[
+  {name:'Bronze',min:0,max:499,color:'#CD7F32',bg:'#FEF3E2',discount:0,freeDelivery:false,icon:'🥉'},
+  {name:'Silver',min:500,max:1499,color:'#C0C0C0',bg:'#F5F5F5',discount:3,freeDelivery:false,icon:'🥈'},
+  {name:'Gold',min:1500,max:999999,color:'#FFD700',bg:'#FFFDE7',discount:5,freeDelivery:true,icon:'🥇'},
+];
+const MIN_ORDER=150;
+const POINT_RATIO=10;
+
+const MOCK_RESTAURANTS=[
+  {id:'rest1',name:'Ristorante La Bella Italia',address:'45 Rue de Rivoli, 75001 Paris',lat:48.8566,lng:2.3522},
+  {id:'rest2',name:'Trattoria Venezia',address:'12 Bd Haussmann, 75009 Paris',lat:48.8748,lng:2.3318},
+  {id:'rest3',name:'Da Mario',address:'8 Rue de la Paix, 75002 Paris',lat:48.8699,lng:2.3311},
+];
+const DEPOT={lat:48.9,lng:2.45,name:'Dépôt Partenope — Roissy'};
+
+// ─── SEED ORDERS for admin (generated once) ─────────────────────────────────
+function generateSeedOrders(catalog){
+  const now=Date.now();
+  const day=86400000;
+  return [
+    {id:'seed1001',date:new Date(now-3*day).toISOString(),items:[{...catalog.find(p=>p.id==='lat1'),qty:20},{...catalog.find(p=>p.id==='sal1'),qty:10},{...catalog.find(p=>p.id==='pas6'),qty:15},{...catalog.find(p=>p.id==='ali4'),qty:12}],total:245.50,status:'livree',restaurantId:'rest1',pointsEarned:24,deliveryProgress:1},
+    {id:'seed1002',date:new Date(now-2*day).toISOString(),items:[{...catalog.find(p=>p.id==='sal2'),qty:3},{...catalog.find(p=>p.id==='bib3'),qty:6},{...catalog.find(p=>p.id==='ali2'),qty:4},{...catalog.find(p=>p.id==='lat2'),qty:8}],total:232.40,status:'livree',restaurantId:'rest2',pointsEarned:23,deliveryProgress:1},
+    {id:'seed1003',date:new Date(now-day).toISOString(),items:[{...catalog.find(p=>p.id==='pas7'),qty:4},{...catalog.find(p=>p.id==='ali1'),qty:30},{...catalog.find(p=>p.id==='sal7'),qty:6},{...catalog.find(p=>p.id==='bib1'),qty:3}],total:353.80,status:'en_preparation',restaurantId:'rest3',pointsEarned:35,deliveryProgress:0},
+    {id:'seed1004',date:new Date(now-day/2).toISOString(),items:[{...catalog.find(p=>p.id==='lat1'),qty:15},{...catalog.find(p=>p.id==='lat2'),qty:10},{...catalog.find(p=>p.id==='ali4'),qty:20},{...catalog.find(p=>p.id==='pas6'),qty:25}],total:215.75,status:'en_livraison',restaurantId:'rest1',pointsEarned:21,deliveryProgress:0.35},
+    {id:'seed1005',date:new Date(now-day/4).toISOString(),items:[{...catalog.find(p=>p.id==='bib2'),qty:12},{...catalog.find(p=>p.id==='bib3'),qty:6},{...catalog.find(p=>p.id==='sal1'),qty:20},{...catalog.find(p=>p.id==='sal3'),qty:8}],total:397.80,status:'en_livraison',restaurantId:'rest2',pointsEarned:39,deliveryProgress:0.6},
+    {id:'seed1006',date:new Date(now-3600000).toISOString(),items:[{...catalog.find(p=>p.id==='pas3'),qty:5},{...catalog.find(p=>p.id==='ali6'),qty:3},{...catalog.find(p=>p.id==='bib4'),qty:4},{...catalog.find(p=>p.id==='lat4'),qty:2}],total:325.90,status:'recue',restaurantId:'rest3',pointsEarned:32,deliveryProgress:0},
+  ];
+}
+
+// ─── NOTIFICATIONS ──────────────────────────────────────────────────────────
+function useNotifications(){
+  const[notifs,setNotifs]=useState([]);
+  const add=useCallback((msg,type='success')=>{
+    const id=Date.now()+Math.random();
+    setNotifs(p=>[...p,{id,msg,type}]);
+    setTimeout(()=>setNotifs(p=>p.filter(n=>n.id!==id)),3200);
+  },[]);
+  return{notifs,add};
+}
+function NotificationStack({notifs}){
+  return(
+    <div className="fixed top-16 right-2 sm:right-4 z-[60] flex flex-col gap-2 pointer-events-none" style={{maxWidth:'calc(100vw - 1rem)'}}>
+      {notifs.map(n=>(
+        <div key={n.id} className={`notif-in pointer-events-auto flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3 rounded-xl shadow-2xl text-white text-xs sm:text-sm font-medium ${n.type==='success'?'bg-partenope-green':n.type==='error'?'bg-partenope-red':'bg-partenope-gold'}`}>
+          <span>{n.type==='success'?'✅':n.type==='error'?'❌':'ℹ️'}</span>
+          <span className="line-clamp-2">{n.msg}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── LOYALTY HELPERS ────────────────────────────────────────────────────────
+function getLoyaltyLevel(pts){return LOYALTY_LEVELS.slice().reverse().find(l=>pts>=l.min)||LOYALTY_LEVELS[0]}
+function getNextLevel(pts){return LOYALTY_LEVELS.find(l=>l.min>pts)||null}
+
+// ─── UPSELL ENGINE ──────────────────────────────────────────────────────────
+function getUpsell(cartItems,orderHistory,catalog){
+  const cartIds=cartItems.map(i=>i.id);
+  const historyIds=orderHistory.flatMap(o=>o.items.map(i=>i.id));
+  const suggestions=new Map();
+  cartIds.forEach(id=>{
+    const prod=catalog.find(p=>p.id===id);
+    if(prod?.pairsWith)prod.pairsWith.forEach(pid=>{
+      if(!cartIds.includes(pid)){const p=catalog.find(p2=>p2.id===pid);if(p)suggestions.set(pid,{...p,reason:`Souvent acheté avec ${prod.name.split(' ').slice(0,3).join(' ')}`})}
+    });
+  });
+  const hasTypes=(types)=>types.every(t=>cartIds.some(id=>catalog.find(p=>p.id===id)?.tags?.includes(t)));
+  if(hasTypes(['pasta','tomate'])&&!cartIds.includes('sal2')){const p=catalog.find(p=>p.id==='sal2');if(p)suggestions.set('sal2',{...p,reason:'Complétez la recette: parmesan 🍝'})}
+  if(cartIds.some(id=>catalog.find(p=>p.id===id)?.cat==='Pasta')&&!cartIds.includes('ali2')){const p=catalog.find(p=>p.id==='ali2');if(p)suggestions.set('ali2',{...p,reason:"Idéal avec les pâtes: huile d'olive"})}
+  const recentIds=orderHistory.slice(-2).flatMap(o=>o.items.map(i=>i.id));
+  historyIds.filter(id=>!recentIds.includes(id)&&!cartIds.includes(id)).slice(0,2).forEach(id=>{const p=catalog.find(p2=>p2.id===id);if(p&&!suggestions.has(id))suggestions.set(id,{...p,reason:'Commandé précédemment'})});
+  return Array.from(suggestions.values()).slice(0,6);
+}
+
+// ─── MAP COMPONENT (fixed mount/unmount) ─────────────────────────────────────
+function DeliveryMap({orders,singleOrderId}){
+  const mapRef=useRef(null);
+  const mapInstanceRef=useRef(null);
+  const markersRef=useRef([]);
+
+  const deliveryOrders=useMemo(()=>{
+    return singleOrderId
+      ? orders.filter(o=>o.id===singleOrderId&&o.status==='en_livraison')
+      : orders.filter(o=>o.status==='en_livraison');
+  },[orders,singleOrderId]);
+
+  // Init map
+  useEffect(()=>{
+    if(!mapRef.current)return;
+    // Small delay to ensure DOM is ready
+    const timer=setTimeout(()=>{
+      if(mapInstanceRef.current)return;
+      try{
+        const map=L.map(mapRef.current,{scrollWheelZoom:true,zoomControl:true}).setView([48.86,2.35],11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(map);
+        mapInstanceRef.current=map;
+        // Force size recalc
+        setTimeout(()=>map.invalidateSize(),200);
+      }catch(e){console.warn('Map init error',e)}
+    },100);
+    return()=>{
+      clearTimeout(timer);
+      if(mapInstanceRef.current){
+        try{mapInstanceRef.current.remove()}catch{}
+        mapInstanceRef.current=null;
+      }
+    };
+  },[]);
+
+  // Update markers
+  useEffect(()=>{
+    const map=mapInstanceRef.current;
+    if(!map)return;
+    markersRef.current.forEach(m=>{try{map.removeLayer(m)}catch{}});
+    markersRef.current=[];
+
+    const depotIcon=L.divIcon({html:'<div style="background:#27AE60;color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3)">🏭</div>',className:'',iconAnchor:[16,16]});
+    const dm=L.marker([DEPOT.lat,DEPOT.lng],{icon:depotIcon}).addTo(map).bindPopup(DEPOT.name);
+    markersRef.current.push(dm);
+
+    deliveryOrders.forEach(order=>{
+      const rest=MOCK_RESTAURANTS.find(r=>r.id===order.restaurantId)||MOCK_RESTAURANTS[0];
+      const progress=order.deliveryProgress||0;
+      const curLat=DEPOT.lat+(rest.lat-DEPOT.lat)*progress;
+      const curLng=DEPOT.lng+(rest.lng-DEPOT.lng)*progress;
+
+      const truckIcon=L.divIcon({html:'<div style="background:#C0392B;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,0.4);border:2px solid white">🚚</div>',className:'',iconAnchor:[18,18]});
+      const restIcon=L.divIcon({html:`<div style="background:#2980B9;color:white;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:bold;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3)">🍽️ ${rest.name.split(' ').slice(0,2).join(' ')}</div>`,className:'',iconAnchor:[0,0]});
+
+      const tm=L.marker([curLat,curLng],{icon:truckIcon}).addTo(map).bindPopup(`Commande #${order.id.slice(-4)} — ETA: ${Math.round((1-progress)*45)} min`);
+      const rm=L.marker([rest.lat,rest.lng],{icon:restIcon}).addTo(map).bindPopup(rest.address);
+      const line=L.polyline([[DEPOT.lat,DEPOT.lng],[rest.lat,rest.lng]],{color:'#C0392B',weight:2,dashArray:'6,4',opacity:0.6}).addTo(map);
+      markersRef.current.push(tm,rm,line);
+    });
+
+    try{map.invalidateSize()}catch{}
+  },[deliveryOrders]);
+
+  const eta=deliveryOrders.length>0?Math.round((1-(deliveryOrders[0]?.deliveryProgress||0))*45):null;
+
+  return(
+    <div className="relative">
+      <div ref={mapRef} style={{height:'300px',borderRadius:'12px',zIndex:1}} className="sm:!h-[400px]"/>
+      {eta!==null&&(
+        <div className="absolute top-2 left-2 bg-white/95 backdrop-blur rounded-xl shadow-lg px-3 py-2 z-10">
+          <div className="text-[10px] text-gray-500 font-medium">ETA estimé</div>
+          <div className="text-xl font-bold text-partenope-red">{eta} <span className="text-xs font-normal text-gray-600">min</span></div>
+        </div>
+      )}
+      {deliveryOrders.length===0&&(
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl z-10">
+          <div className="bg-white rounded-xl px-4 py-3 text-center shadow-lg">
+            <div className="text-2xl mb-1">🚚</div>
+            <div className="font-semibold text-gray-700 text-sm">Aucune livraison active</div>
+            <div className="text-xs text-gray-500">Passez des commandes en "En livraison"</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PRODUCT CARD (mobile optimized) ────────────────────────────────────────
+function ProductCard({product,onAdd,compact}){
+  const[added,setAdded]=useState(false);
+  const handleAdd=()=>{onAdd(product);setAdded(true);setTimeout(()=>setAdded(false),1200)};
+
+  if(compact)return(
+    <div className="flex items-center gap-2 p-2 sm:p-3 bg-white rounded-xl border border-gray-100 hover:border-partenope-red/30 transition-all product-card">
+      <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg overflow-hidden flex-shrink-0">
+        <img src={product.img} alt="" className="w-full h-full object-cover"/>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[11px] sm:text-xs font-semibold text-gray-800 leading-tight truncate">{product.name}</div>
+        <div className="text-partenope-red font-bold text-xs sm:text-sm">{product.price.toFixed(2)} €</div>
+        {product.reason&&<div className="text-[10px] text-partenope-green truncate">✨ {product.reason}</div>}
+      </div>
+      <button onClick={handleAdd} className={`flex-shrink-0 w-8 h-8 rounded-lg text-xs font-bold transition-all flex items-center justify-center ${added?'bg-partenope-green text-white':'bg-partenope-red text-white active:scale-90'}`}>
+        {added?'✓':'+'}
+      </button>
+    </div>
+  );
+
+  return(
+    <div className="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col animate-slide-up">
+      <div className="relative overflow-hidden" style={{height:'140px'}}>
+        <img src={product.img} alt={product.name} className="w-full h-full object-cover"/>
+        {product.stock<20&&product.stock>0&&(
+          <div className="absolute top-1.5 right-1.5 bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">Stock bas</div>
+        )}
+        {product.stock===0&&(
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="bg-white text-partenope-red font-bold px-3 py-1 rounded-full text-xs">Rupture</span>
+          </div>
+        )}
+        <div className="absolute top-1.5 left-1.5">
+          <span className="bg-white/90 backdrop-blur-sm text-gray-600 text-[10px] px-1.5 py-0.5 rounded-full font-medium">{CAT_ICONS[product.cat]}</span>
+        </div>
+      </div>
+      <div className="p-3 flex flex-col flex-1">
+        <h3 className="font-semibold text-gray-800 text-xs sm:text-sm leading-snug mb-1 flex-1 line-clamp-2">{product.name}</h3>
+        <div className="text-[10px] text-gray-400 mb-1.5">{product.unit} · Stock: {product.stock}</div>
+        <div className="flex items-center justify-between mt-auto gap-2">
+          <div className="text-partenope-red font-bold text-base sm:text-lg">{product.price.toFixed(2)} <span className="text-xs">€</span></div>
+          <button onClick={handleAdd} disabled={product.stock===0}
+            className={`px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wide transition-all duration-200 whitespace-nowrap ${added?'bg-partenope-green text-white scale-95':product.stock===0?'bg-gray-200 text-gray-400 cursor-not-allowed':'bg-partenope-red text-white hover:bg-partenope-red-dark active:scale-95'}`}>
+            {added?'✓ Ajouté':'Ajouter'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CART SIDEBAR (full-screen on mobile) ───────────────────────────────────
+function CartSidebar({cart,setCart,catalog,orderHistory,loyalty,onCheckout,onClose}){
+  const upsell=useMemo(()=>getUpsell(cart,orderHistory,catalog),[cart,orderHistory,catalog]);
+  const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const pts=Math.floor(total/POINT_RATIO);
+  const level=getLoyaltyLevel(loyalty.points);
+  const nextLevel=getNextLevel(loyalty.points);
+  const discount=level.discount;
+  const totalAfter=total*(1-discount/100);
+
+  const updateQty=(id,delta)=>{setCart(p=>p.map(i=>i.id===id?{...i,qty:Math.max(0,i.qty+delta)}:i).filter(i=>i.qty>0))};
+  const remove=(id)=>setCart(p=>p.filter(i=>i.id!==id));
+
+  return(
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}/>
+      <div className="relative bg-white w-full sm:max-w-md flex flex-col shadow-2xl animate-slide-right overflow-y-auto" style={{maxHeight:'100dvh'}}>
+        <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between z-10">
+          <div>
+            <h2 className="font-serif font-bold text-lg sm:text-xl text-gray-900">Mon Panier</h2>
+            <div className="text-[11px] text-gray-500">{cart.length} article{cart.length!==1?'s':''}</div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600">✕</button>
+        </div>
+
+        {nextLevel&&(
+          <div className="px-4 py-2.5 bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-semibold text-amber-700">{level.icon} {level.name} · {loyalty.points} pts</span>
+              <span className="text-[11px] text-amber-600">{nextLevel.icon} {nextLevel.name} à {nextLevel.min} pts</span>
+            </div>
+            <div className="h-1.5 bg-amber-100 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full progress-bar" style={{width:`${Math.min(100,(loyalty.points/nextLevel.min)*100)}%`}}/>
+            </div>
+            <div className="text-[10px] text-amber-600 mt-0.5">+{pts} pts avec cette commande</div>
+          </div>
+        )}
+
+        <div className="flex-1 px-4 py-3 space-y-2">
+          {cart.length===0?(
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="text-5xl mb-3">🛒</div>
+              <div className="font-semibold text-gray-600">Votre panier est vide</div>
+              <div className="text-sm text-gray-400 mt-1">Ajoutez des produits</div>
+            </div>
+          ):(
+            cart.map(item=>(
+              <div key={item.id} className="flex gap-2 p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                  <img src={item.img} alt="" className="w-full h-full object-cover"/>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-semibold text-gray-800 leading-snug line-clamp-2">{item.name}</div>
+                  <div className="text-partenope-red font-bold text-xs mt-0.5">{item.price.toFixed(2)} €</div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <button onClick={()=>remove(item.id)} className="text-gray-300 hover:text-partenope-red text-xs leading-none">✕</button>
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={()=>updateQty(item.id,-1)} className="w-6 h-6 rounded-full bg-gray-200 active:bg-partenope-red active:text-white text-sm font-bold flex items-center justify-center">-</button>
+                    <span className="text-xs font-bold w-4 text-center">{item.qty}</span>
+                    <button onClick={()=>updateQty(item.id,1)} className="w-6 h-6 rounded-full bg-gray-200 active:bg-partenope-green active:text-white text-sm font-bold flex items-center justify-center">+</button>
+                  </div>
+                  <div className="text-[10px] text-gray-500">{(item.price*item.qty).toFixed(2)} €</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {upsell.length>0&&cart.length>0&&(
+          <div className="px-4 py-2.5 border-t border-gray-100 bg-gradient-to-b from-white to-gray-50">
+            <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">✨ Vous pourriez aimer</div>
+            <div className="space-y-1.5">
+              {upsell.slice(0,3).map(p=>(
+                <ProductCard key={p.id} product={p} onAdd={(prod)=>{
+                  const exists=cart.find(i=>i.id===prod.id);
+                  if(exists)setCart(prev=>prev.map(i=>i.id===prod.id?{...i,qty:i.qty+1}:i));
+                  else setCart(prev=>[...prev,{...prod,qty:1}]);
+                }} compact/>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cart.length>0&&(
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 pb-safe">
+            {total<MIN_ORDER&&(
+              <div className="mb-2 flex items-center gap-1.5 text-[11px] bg-amber-50 border border-amber-200 text-amber-700 rounded-lg px-2.5 py-1.5">
+                <span>⚠️</span><span>Minimum: <b>{MIN_ORDER}€</b> — Il manque <b>{(MIN_ORDER-total).toFixed(2)}€</b></span>
+              </div>
+            )}
+            {discount>0&&<div className="flex justify-between text-xs mb-0.5"><span className="text-gray-500">Sous-total</span><span className="line-through text-gray-400">{total.toFixed(2)} €</span></div>}
+            {discount>0&&<div className="flex justify-between text-xs mb-0.5 text-partenope-green"><span>-{discount}% {level.name}</span><span>-{(total*discount/100).toFixed(2)} €</span></div>}
+            <div className="flex justify-between font-bold text-base sm:text-lg mb-3">
+              <span>Total</span><span className="text-partenope-red">{totalAfter.toFixed(2)} €</span>
+            </div>
+            <button onClick={()=>{if(total>=MIN_ORDER)onCheckout()}} disabled={total<MIN_ORDER}
+              className={`w-full py-3 rounded-xl font-bold text-white transition-all text-sm ${total>=MIN_ORDER?'bg-partenope-red active:bg-partenope-red-dark shadow-lg active:scale-95':'bg-gray-300 cursor-not-allowed'}`}>
+              {total>=MIN_ORDER?`Commander — ${totalAfter.toFixed(2)} €`:'Minimum non atteint'}
+            </button>
+            <div className="text-center text-[10px] text-gray-400 mt-1">+{pts} points de fidélité</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── CHECKOUT VIEW ──────────────────────────────────────────────────────────
+function CheckoutView({cart,catalog,orderHistory,loyalty,onConfirm,onBack}){
+  const upsell=useMemo(()=>getUpsell(cart,orderHistory,catalog),[cart,orderHistory,catalog]);
+  const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const level=getLoyaltyLevel(loyalty.points);
+  const discount=level.discount;
+  const totalAfter=total*(1-discount/100);
+  const pts=Math.floor(total/POINT_RATIO);
+
+  return(
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-6 animate-fade-in">
+      <button onClick={onBack} className="flex items-center gap-2 text-partenope-red font-medium mb-4 text-sm">← Retour</button>
+      <h1 className="font-serif text-2xl sm:text-3xl font-bold text-gray-900 mb-5">Finaliser la commande</h1>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50"><h2 className="font-semibold text-gray-800 text-sm">Récapitulatif</h2></div>
+        <div className="divide-y divide-gray-50">
+          {cart.map(item=>(
+            <div key={item.id} className="flex items-center gap-3 px-4 py-2.5">
+              <span className="text-xs text-gray-600 flex-1 line-clamp-1">{item.name}</span>
+              <span className="text-xs text-gray-500">×{item.qty}</span>
+              <span className="text-xs font-semibold text-gray-800">{(item.price*item.qty).toFixed(2)} €</span>
+            </div>
+          ))}
+        </div>
+        <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+          {discount>0&&<div className="flex justify-between text-xs text-partenope-green mb-1"><span>-{discount}% {level.name}</span><span>-{(total*discount/100).toFixed(2)} €</span></div>}
+          <div className="flex justify-between font-bold text-base sm:text-lg"><span>Total TTC</span><span className="text-partenope-red">{totalAfter.toFixed(2)} €</span></div>
+          <div className="text-[11px] text-amber-600 mt-1">+{pts} pts fidélité {level.icon}</div>
+        </div>
+      </div>
+
+      {upsell.length>0&&(
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-100 p-4 mb-4">
+          <h3 className="font-semibold text-amber-800 text-sm mb-2">🌟 Peut-être aussi…</h3>
+          <div className="space-y-1.5">
+            {upsell.slice(0,3).map(p=>(
+              <div key={p.id} className="flex items-center gap-2 bg-white rounded-xl p-2 border border-amber-100">
+                <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0"><img src={p.img} alt="" className="w-full h-full object-cover"/></div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-semibold text-gray-700 truncate">{p.name}</div>
+                  <div className="text-partenope-red font-bold text-xs">{p.price.toFixed(2)} €</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
+        <h2 className="font-semibold text-gray-800 text-sm mb-3">Informations de livraison</h2>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="p-2.5 bg-blue-50 rounded-xl"><div className="font-medium text-blue-800">📅 Jours</div><div className="text-blue-600 mt-0.5">Lun, Mer, Ven</div></div>
+          <div className="p-2.5 bg-green-50 rounded-xl"><div className="font-medium text-green-800">⏰ Créneau</div><div className="text-green-600 mt-0.5">07h–12h</div></div>
+          <div className="p-2.5 bg-purple-50 rounded-xl col-span-2"><div className="font-medium text-purple-800">📍 Zone</div><div className="text-purple-600 mt-0.5">Paris + Île-de-France</div></div>
+        </div>
+      </div>
+
+      <button onClick={onConfirm} className="w-full py-3.5 bg-partenope-red text-white font-bold text-base rounded-2xl active:bg-partenope-red-dark shadow-lg active:scale-98 transition-all">
+        🎉 Confirmer la commande
+      </button>
+      <p className="text-center text-[11px] text-gray-400 mt-2">Règlement à la livraison ou par virement.</p>
+    </div>
+  );
+}
+
+// ─── ORDER HISTORY ──────────────────────────────────────────────────────────
+function OrderHistory({orders,onRepeatOrder,onTrack}){
+  const statusCfg={
+    recue:{label:'Reçue',color:'bg-blue-100 text-blue-700',icon:'📋'},
+    en_preparation:{label:'En préparation',color:'bg-amber-100 text-amber-700',icon:'🔪'},
+    en_livraison:{label:'En livraison',color:'bg-purple-100 text-purple-700',icon:'🚚'},
+    livree:{label:'Livrée ✓',color:'bg-green-100 text-green-700',icon:'✅'},
+  };
+  if(orders.length===0)return(
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="text-5xl mb-3">📦</div>
+      <div className="font-semibold text-gray-600 text-lg">Aucune commande</div>
+      <div className="text-gray-400 text-sm mt-1">Vos commandes apparaîtront ici</div>
+    </div>
+  );
+  return(
+    <div className="max-w-3xl mx-auto space-y-3 animate-fade-in">
+      {[...orders].reverse().map(order=>{
+        const s=statusCfg[order.status]||statusCfg.recue;
+        return(
+          <div key={order.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50">
+              <div>
+                <div className="font-bold text-gray-900 text-sm">Commande #{order.id.slice(-6)}</div>
+                <div className="text-[11px] text-gray-400">{new Date(order.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${s.color}`}>{s.icon} {s.label}</span>
+                <span className="font-bold text-partenope-red text-sm">{order.total.toFixed(2)} €</span>
+              </div>
+            </div>
+            <div className="px-4 py-2 text-xs text-gray-600 space-y-0.5">
+              {order.items.slice(0,3).map(item=>(
+                <div key={item.id} className="flex justify-between"><span className="truncate">{item.name} ×{item.qty}</span><span className="ml-2 font-medium">{(item.price*item.qty).toFixed(2)} €</span></div>
+              ))}
+              {order.items.length>3&&<div className="text-gray-400 text-[11px]">+{order.items.length-3} autre(s)</div>}
+            </div>
+            <div className="px-4 py-2.5 bg-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-gray-100">
+              <div className="text-[11px] text-amber-600 font-medium">+{order.pointsEarned} pts fidélité</div>
+              <div className="flex gap-2 w-full sm:w-auto">
+                {order.status==='en_livraison'&&(
+                  <button onClick={()=>onTrack(order.id)} className="flex-1 sm:flex-none px-3 py-1.5 bg-purple-600 text-white text-[11px] font-bold rounded-lg active:bg-purple-700">🚚 Suivre</button>
+                )}
+                <button onClick={()=>onRepeatOrder(order)} className="flex-1 sm:flex-none px-3 py-1.5 bg-partenope-red text-white text-[11px] font-bold rounded-lg active:bg-partenope-red-dark">🔄 Répéter</button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── LOYALTY DASHBOARD ──────────────────────────────────────────────────────
+function LoyaltyDashboard({loyalty}){
+  const level=getLoyaltyLevel(loyalty.points);
+  const nextLevel=getNextLevel(loyalty.points);
+  return(
+    <div className="max-w-2xl mx-auto animate-fade-in">
+      <div className="rounded-3xl p-6 sm:p-8 mb-5 text-center" style={{background:`linear-gradient(135deg,${level.bg},white)`,border:`2px solid ${level.color}`}}>
+        <div className="text-5xl mb-2">{level.icon}</div>
+        <div className="font-serif text-2xl sm:text-3xl font-bold mb-1" style={{color:level.color}}>{level.name}</div>
+        <div className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">{loyalty.points}</div>
+        <div className="text-gray-500 text-sm mb-3">points accumulés</div>
+        {level.discount>0&&<div className="inline-block bg-white/80 px-3 py-1.5 rounded-full text-xs font-semibold" style={{color:level.color}}>{level.discount}% de réduction</div>}
+        {level.freeDelivery&&<div className="mt-2 inline-block bg-white/80 px-3 py-1.5 rounded-full text-xs font-semibold text-partenope-green">🚚 Livraison gratuite</div>}
+      </div>
+      {nextLevel&&(
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm mb-5">
+          <div className="flex justify-between mb-1.5 text-xs"><span className="font-semibold text-gray-700">{level.icon} {level.name}</span><span className="font-semibold text-gray-700">{nextLevel.icon} {nextLevel.name}</span></div>
+          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full rounded-full progress-bar" style={{width:`${(loyalty.points/nextLevel.min)*100}%`,background:`linear-gradient(90deg,${level.color},${nextLevel.color})`}}/>
+          </div>
+          <div className="text-center text-xs text-gray-500 mt-1.5">{nextLevel.min-loyalty.points} pts pour {nextLevel.name}</div>
+        </div>
+      )}
+      <div className="grid grid-cols-3 gap-2 mb-5">
+        {LOYALTY_LEVELS.map(l=>(
+          <div key={l.name} className={`rounded-xl p-3 border-2 text-center ${loyalty.points>=l.min?'':'opacity-50'}`} style={{borderColor:l.color,background:l.bg}}>
+            <div className="text-2xl mb-0.5">{l.icon}</div>
+            <div className="font-bold text-xs" style={{color:l.color}}>{l.name}</div>
+            <div className="text-[10px] text-gray-600 mt-0.5">{l.min} pts</div>
+            {l.discount>0&&<div className="text-[10px] font-semibold mt-0.5" style={{color:l.color}}>{l.discount}%</div>}
+            {l.freeDelivery&&<div className="text-[10px] text-partenope-green font-semibold mt-0.5">🚚</div>}
+          </div>
+        ))}
+      </div>
+      {loyalty.history.length>0&&(
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm">Historique</div>
+          <div className="divide-y divide-gray-50">
+            {[...loyalty.history].reverse().map((h,i)=>(
+              <div key={i} className="px-4 py-2.5 flex items-center justify-between">
+                <div><div className="text-xs font-medium text-gray-700">{h.desc}</div><div className="text-[10px] text-gray-400">{new Date(h.date).toLocaleDateString('fr-FR')}</div></div>
+                <div className={`font-bold text-xs ${h.points>0?'text-partenope-green':'text-partenope-red'}`}>{h.points>0?'+':''}{h.points} pts</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── ADMIN DASHBOARD ────────────────────────────────────────────────────────
+function AdminDashboard({orders,catalog,setCatalog,setOrders,notify}){
+  const[tab,setTab]=useState('orders');
+  const[editStock,setEditStock]=useState({});
+
+  const updateStatus=(oid,ns)=>{setOrders(p=>p.map(o=>o.id===oid?{...o,status:ns,deliveryProgress:ns==='en_livraison'?0.05:o.deliveryProgress}:o));notify('Statut mis à jour ✓')};
+  const saveStock=(pid)=>{const n=parseInt(editStock[pid]);if(isNaN(n)||n<0)return;setCatalog(p=>p.map(p2=>p2.id===pid?{...p2,stock:n}:p2));setEditStock(p=>{const x={...p};delete x[pid];return x});notify('Stock mis à jour ✓')};
+  const toggleProduct=(pid)=>{setCatalog(p=>p.map(p2=>p2.id===pid?{...p2,active:p2.active===false?true:false}:p2))};
+
+  const statusCfg={
+    recue:{label:'Reçue',color:'bg-blue-100 text-blue-700',next:'en_preparation'},
+    en_preparation:{label:'En prépa.',color:'bg-amber-100 text-amber-700',next:'en_livraison'},
+    en_livraison:{label:'En livraison',color:'bg-purple-100 text-purple-700',next:'livree'},
+    livree:{label:'Livrée',color:'bg-green-100 text-green-700',next:null},
+  };
+
+  const totalRevenue=orders.reduce((s,o)=>s+o.total,0);
+  const productCount={};
+  orders.forEach(o=>o.items.forEach(i=>{productCount[i.id]=(productCount[i.id]||0)+i.qty}));
+  const topProducts=Object.entries(productCount).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,qty])=>({...catalog.find(p=>p.id===id),qty}));
+  const inDelivery=orders.filter(o=>o.status==='en_livraison');
+
+  return(
+    <div className="animate-fade-in">
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
+        {[
+          {label:'Commandes',value:orders.length,icon:'📦',color:'text-blue-600',bg:'bg-blue-50'},
+          {label:"Chiffre d'aff.",value:`${totalRevenue.toFixed(0)}€`,icon:'💶',color:'text-green-600',bg:'bg-green-50'},
+          {label:'En livraison',value:inDelivery.length,icon:'🚚',color:'text-purple-600',bg:'bg-purple-50'},
+          {label:'Restaurants',value:new Set(orders.map(o=>o.restaurantId)).size,icon:'🍽️',color:'text-orange-600',bg:'bg-orange-50'},
+        ].map(s=>(
+          <div key={s.label} className={`${s.bg} rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-white shadow-sm`}>
+            <div className="text-lg sm:text-2xl mb-0.5">{s.icon}</div>
+            <div className={`font-bold text-lg sm:text-2xl ${s.color}`}>{s.value}</div>
+            <div className="text-[10px] sm:text-xs text-gray-500">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-4 overflow-x-auto scroll-hide border-b border-gray-200 pb-px">
+        {[['orders','📋 Commandes'],['stock','📦 Stock'],['map','🗺️ Carte'],['stats','📊 Stats']].map(([k,l])=>(
+          <button key={k} onClick={()=>setTab(k)} className={`px-3 py-2 text-xs sm:text-sm font-semibold border-b-2 transition-all whitespace-nowrap ${tab===k?'border-partenope-red text-partenope-red':'border-transparent text-gray-500'}`}>{l}</button>
+        ))}
+      </div>
+
+      {/* Orders */}
+      {tab==='orders'&&(
+        <div className="space-y-2">
+          {orders.length===0&&<div className="text-center py-12 text-gray-400 text-sm">Aucune commande</div>}
+          {[...orders].reverse().map(order=>{
+            const s=statusCfg[order.status]||statusCfg.recue;
+            const rest=MOCK_RESTAURANTS.find(r=>r.id===order.restaurantId)||MOCK_RESTAURANTS[0];
+            return(
+              <div key={order.id} className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-3 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-50">
+                  <div>
+                    <div className="font-bold text-gray-900 text-sm">#{order.id.slice(-6)} — <span className="font-medium text-gray-600">{rest.name.split(' ').slice(0,3).join(' ')}</span></div>
+                    <div className="text-[10px] text-gray-400">{new Date(order.date).toLocaleDateString('fr-FR',{dateStyle:'medium'})} · {order.items.length} art. · <b>{order.total.toFixed(2)} €</b></div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${s.color}`}>{s.label}</span>
+                    {s.next&&(
+                      <button onClick={()=>updateStatus(order.id,s.next)} className="px-2.5 py-1 bg-partenope-red text-white text-[11px] font-bold rounded-lg active:bg-partenope-red-dark">
+                        → {statusCfg[s.next]?.label}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="px-3 sm:px-5 py-2 flex flex-wrap gap-x-4 gap-y-0.5">
+                  {order.items.slice(0,4).map(item=>(
+                    <div key={item.id} className="text-[11px] text-gray-600">• {item.name.slice(0,25)}… ×{item.qty}</div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Stock */}
+      {tab==='stock'&&(
+        <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="divide-y divide-gray-50">
+            {catalog.map(p=>(
+              <div key={p.id} className={`flex items-center gap-2 sm:gap-4 px-3 sm:px-5 py-2 ${p.active===false?'opacity-40':''}`}>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden flex-shrink-0"><img src={p.img} alt="" className="w-full h-full object-cover"/></div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] sm:text-sm font-semibold text-gray-800 truncate">{p.name}</div>
+                  <div className="text-[10px] text-gray-400">{p.cat} · {p.price.toFixed(2)} €</div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${p.stock>50?'bg-green-400':p.stock>10?'bg-amber-400':'bg-red-400'}`}/>
+                  <input type="number" value={editStock[p.id]!==undefined?editStock[p.id]:p.stock}
+                    onChange={e=>setEditStock(prev=>({...prev,[p.id]:e.target.value}))}
+                    className="w-14 sm:w-20 px-1.5 py-1 border border-gray-200 rounded-lg text-xs text-center focus:border-partenope-red focus:outline-none" min="0"/>
+                  {editStock[p.id]!==undefined&&(
+                    <button onClick={()=>saveStock(p.id)} className="px-2 py-1 bg-partenope-green text-white text-[10px] font-bold rounded-lg">✓</button>
+                  )}
+                </div>
+                <button onClick={()=>toggleProduct(p.id)} className={`px-2 py-1 text-[10px] font-bold rounded-lg whitespace-nowrap ${p.active===false?'bg-green-100 text-green-700':'bg-gray-100 text-gray-500'}`}>
+                  {p.active===false?'On':'Off'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Map */}
+      {tab==='map'&&(
+        <div>
+          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
+            <span><span className="inline-block w-2.5 h-2.5 bg-partenope-red rounded-full mr-1"/>Camion</span>
+            <span><span className="inline-block w-2.5 h-2.5 bg-blue-500 rounded-full mr-1"/>Restaurant</span>
+            <span><span className="inline-block w-2.5 h-2.5 bg-partenope-green rounded-full mr-1"/>Dépôt</span>
+          </div>
+          <DeliveryMap orders={orders}/>
+        </div>
+      )}
+
+      {/* Stats */}
+      {tab==='stats'&&(
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <h3 className="font-bold text-gray-800 text-sm mb-3">🏆 Top produits</h3>
+            <div className="space-y-2.5">
+              {topProducts.map((p,i)=>(
+                <div key={p?.id||i} className="flex items-center gap-2">
+                  <span className="text-base font-bold text-gray-300 w-5">#{i+1}</span>
+                  <div className="flex-1">
+                    <div className="text-xs font-semibold text-gray-700 truncate">{p?.name||'—'}</div>
+                    <div className="h-1 bg-gray-100 rounded-full mt-0.5"><div className="h-full bg-partenope-red rounded-full" style={{width:`${Math.min(100,(p?.qty/(topProducts[0]?.qty||1))*100)}%`}}/></div>
+                  </div>
+                  <span className="text-xs font-bold text-gray-500">{p?.qty||0}</span>
+                </div>
+              ))}
+              {topProducts.length===0&&<div className="text-gray-400 text-xs">Aucune donnée</div>}
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <h3 className="font-bold text-gray-800 text-sm mb-3">🍽️ Clients fidèles</h3>
+            <div className="space-y-2">
+              {MOCK_RESTAURANTS.map(r=>{
+                const ro=orders.filter(o=>o.restaurantId===r.id);
+                const rt=ro.reduce((s,o)=>s+o.total,0);
+                const rp=Math.floor(rt/POINT_RATIO);
+                const rl=getLoyaltyLevel(rp);
+                return(
+                  <div key={r.id} className="flex items-center gap-2 p-2.5 bg-gray-50 rounded-xl">
+                    <span className="text-xl">{rl.icon}</span>
+                    <div className="flex-1"><div className="text-xs font-semibold text-gray-700">{r.name}</div><div className="text-[10px] text-gray-400">{ro.length} cmd · {rt.toFixed(0)} €</div></div>
+                    <span className="text-[11px] font-bold" style={{color:rl.color}}>{rl.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── TRACKING VIEW ──────────────────────────────────────────────────────────
+function TrackingView({orderId,orders,onClose}){
+  const order=orders.find(o=>o.id===orderId);
+  const progress=order?.deliveryProgress||0;
+  const eta=Math.round((1-progress)*45);
+  return(
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-6 animate-fade-in">
+      <button onClick={onClose} className="flex items-center gap-2 text-partenope-red font-medium mb-4 text-sm">← Retour</button>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="font-serif text-xl sm:text-2xl font-bold text-gray-900">Suivi de livraison</h1>
+        <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">🚚 En route</div>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="text-3xl">⏱️</div>
+          <div><div className="text-[10px] text-gray-500 uppercase font-medium">Arrivée estimée</div><div className="text-2xl sm:text-3xl font-bold text-partenope-red">{eta} min</div></div>
+        </div>
+        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-purple-500 to-partenope-red rounded-full progress-bar" style={{width:`${progress*100}%`}}/>
+        </div>
+        <div className="flex justify-between text-[10px] text-gray-400 mt-1"><span>🏭 Dépôt</span><span>🍽️ Restaurant</span></div>
+      </div>
+      <DeliveryMap orders={orders} singleOrderId={orderId}/>
+    </div>
+  );
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
+function App(){
+  const[catalog,setCatalog]=useState(()=>S.get('ptn_catalog',INITIAL_CATALOG));
+  const[orders,setOrders]=useState(()=>{
+    const saved=S.get('ptn_orders',null);
+    if(saved&&saved.length>0)return saved;
+    return generateSeedOrders(INITIAL_CATALOG);
+  });
+  const[cart,setCart]=useState(()=>S.get('ptn_cart',[]));
+  const[loyalty,setLoyalty]=useState(()=>S.get('ptn_loyalty',{points:120,history:[{desc:'Commande bienvenue',points:120,date:new Date(Date.now()-86400000*5).toISOString()}]}));
+  const[currentRestaurant]=useState(MOCK_RESTAURANTS[0]);
+
+  const[role,setRole]=useState('client');
+  const[view,setView]=useState('catalog');
+  const[activeCat,setActiveCat]=useState('Tous');
+  const[search,setSearch]=useState('');
+  const[showCart,setShowCart]=useState(false);
+  const[showCheckout,setShowCheckout]=useState(false);
+  const[trackingId,setTrackingId]=useState(null);
+  const[cartPulse,setCartPulse]=useState(false);
+  const{notifs,add:notify}=useNotifications();
+
+  useEffect(()=>{S.set('ptn_catalog',catalog)},[catalog]);
+  useEffect(()=>{S.set('ptn_orders',orders)},[orders]);
+  useEffect(()=>{S.set('ptn_cart',cart)},[cart]);
+  useEffect(()=>{S.set('ptn_loyalty',loyalty)},[loyalty]);
+
+  // Simulate delivery progress
+  useEffect(()=>{
+    const iv=setInterval(()=>{
+      setOrders(p=>p.map(o=>{
+        if(o.status==='en_livraison'&&(o.deliveryProgress||0)<1){
+          const np=Math.min(1,(o.deliveryProgress||0)+0.008);
+          if(np>=1)return{...o,deliveryProgress:1,status:'livree'};
+          return{...o,deliveryProgress:np};
+        }
+        return o;
+      }));
+    },2000);
+    return()=>clearInterval(iv);
+  },[]);
+
+  const addToCart=useCallback((product)=>{
+    setCart(prev=>{const ex=prev.find(i=>i.id===product.id);if(ex)return prev.map(i=>i.id===product.id?{...i,qty:i.qty+1}:i);return[...prev,{...product,qty:1}]});
+    setCartPulse(true);setTimeout(()=>setCartPulse(false),500);
+    notify(`${product.name.split(' ').slice(0,3).join(' ')} ajouté`);
+  },[notify]);
+
+  const handleCheckout=()=>{setShowCart(false);setShowCheckout(true)};
+  const handleConfirmOrder=()=>{
+    const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
+    const level=getLoyaltyLevel(loyalty.points);
+    const finalTotal=total*(1-level.discount/100);
+    const pts=Math.floor(total/POINT_RATIO);
+    const newOrder={id:Date.now().toString(),date:new Date().toISOString(),items:cart.map(i=>({...i})),total:finalTotal,status:'recue',restaurantId:currentRestaurant.id,pointsEarned:pts,deliveryProgress:0};
+    setOrders(p=>[...p,newOrder]);
+    setLoyalty(p=>({points:p.points+pts,history:[...p.history,{desc:`Commande #${newOrder.id.slice(-6)}`,points:pts,date:newOrder.date}]}));
+    setCart([]);setShowCheckout(false);setView('orders');
+    notify(`Commande confirmée! +${pts} pts 🎉`);
+  };
+  const handleRepeatOrder=(order)=>{
+    const valid=order.items.filter(item=>catalog.find(p=>p.id===item.id)?.stock>0);
+    setCart(valid.map(i=>({...i})));setView('catalog');setShowCart(true);
+    notify('Commande chargée dans le panier ✓');
+  };
+
+  const filteredProducts=useMemo(()=>{
+    let p=catalog.filter(p=>p.active!==false);
+    if(activeCat!=='Tous')p=p.filter(x=>x.cat===activeCat);
+    if(search.trim()){const q=search.toLowerCase();p=p.filter(x=>x.name.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)||x.tags?.some(t=>t.includes(q)))}
+    return p;
+  },[catalog,activeCat,search]);
+
+  const cartCount=cart.reduce((s,i)=>s+i.qty,0);
+  const cartTotal=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const loyaltyLevel=getLoyaltyLevel(loyalty.points);
+
+  // Tracking view
+  if(trackingId)return(
+    <div className="min-h-screen bg-partenope-cream">
+      <NotificationStack notifs={notifs}/>
+      <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-partenope-red"><span className="text-white font-bold font-serif">P</span></div>
+          <span className="font-serif font-bold text-lg text-gray-900">Partenope</span>
+        </div>
+      </header>
+      <main className="max-w-7xl mx-auto"><TrackingView orderId={trackingId} orders={orders} onClose={()=>setTrackingId(null)}/></main>
+    </div>
+  );
+
+  // Checkout view
+  if(showCheckout)return(
+    <div className="min-h-screen bg-partenope-cream">
+      <NotificationStack notifs={notifs}/>
+      <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-partenope-red"><span className="text-white font-bold font-serif">P</span></div>
+          <span className="font-serif font-bold text-lg text-gray-900">Partenope</span>
+        </div>
+      </header>
+      <main className="max-w-7xl mx-auto">
+        <CheckoutView cart={cart} catalog={catalog} orderHistory={orders.filter(o=>o.restaurantId===currentRestaurant.id)} loyalty={loyalty} onConfirm={handleConfirmOrder} onBack={()=>{setShowCheckout(false);setShowCart(true)}}/>
+      </main>
+    </div>
+  );
+
+  return(
+    <div className="min-h-screen bg-partenope-cream pb-16 sm:pb-0">
+      <NotificationStack notifs={notifs}/>
+
+      {/* ── HEADER ── */}
+      <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+          <div className="flex items-center justify-between py-2 sm:py-3">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center bg-partenope-red shadow-md">
+                <span className="text-white font-bold text-base sm:text-xl font-serif">P</span>
+              </div>
+              <div className="hidden sm:block">
+                <div className="font-serif font-bold text-xl text-gray-900 leading-none">Partenope</div>
+                <div className="text-[10px] text-gray-400">Distribution Alimentaire Italienne</div>
+              </div>
+              <span className="sm:hidden font-serif font-bold text-lg text-gray-900">Partenope</span>
+            </div>
+
+            {/* Desktop search */}
+            {role==='client'&&(
+              <div className="hidden md:flex flex-1 max-w-sm mx-6">
+                <div className="relative w-full">
+                  <input type="text" placeholder="Rechercher un produit..." value={search} onChange={e=>setSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:border-partenope-red focus:outline-none focus:ring-2 focus:ring-partenope-red/20 bg-gray-50"/>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                </div>
+              </div>
+            )}
+
+            {/* Right controls */}
+            <div className="flex items-center gap-2">
+              {role==='client'&&(
+                <button onClick={()=>setView('loyalty')} className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-amber-200 bg-amber-50">
+                  <span className="text-sm">{loyaltyLevel.icon}</span>
+                  <span className="text-[11px] font-bold text-amber-700">{loyalty.points}</span>
+                </button>
+              )}
+              <div className="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
+                <button onClick={()=>{setRole('client');setView('catalog')}} className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold transition-all ${role==='client'?'bg-white shadow text-partenope-red':'text-gray-500'}`}>
+                  🍽️ <span className="hidden sm:inline">Restaurant</span>
+                </button>
+                <button onClick={()=>{setRole('admin');setView('admin')}} className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold transition-all ${role==='admin'?'bg-white shadow text-partenope-red':'text-gray-500'}`}>
+                  ⚙️ <span className="hidden sm:inline">Admin</span>
+                </button>
+              </div>
+              {role==='client'&&(
+                <button onClick={()=>setShowCart(true)} className={`relative flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-partenope-red text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold shadow-md active:scale-95 transition-all ${cartPulse?'cart-pulse':''}`}>
+                  <span>🛒</span><span className="hidden sm:inline">Panier</span>
+                  {cartCount>0&&<span className="absolute -top-1.5 -right-1.5 w-4 h-4 sm:w-5 sm:h-5 bg-partenope-gold text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ── HERO (catalog only) ── */}
+      {role==='client'&&view==='catalog'&&(
+        <div className="bg-gradient-to-r from-red-900 via-red-800 to-red-700 text-white py-6 sm:py-10 px-3 sm:px-4 relative overflow-hidden">
+          <div className="relative max-w-7xl mx-auto">
+            <div className="flex items-end gap-3 mb-2">
+              <div className="text-3xl sm:text-5xl">🇮🇹</div>
+              <div>
+                <h1 className="font-serif text-xl sm:text-3xl md:text-4xl font-bold leading-tight">L'Italie dans votre cuisine</h1>
+                <p className="text-red-200 text-xs sm:text-base mt-0.5">Produits authentiques — Paris & Île-de-France</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <div className="flex items-center gap-1 text-[11px] sm:text-sm bg-white/10 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full backdrop-blur-sm">🚚 Livraison L/M/V</div>
+              <div className="flex items-center gap-1 text-[11px] sm:text-sm bg-white/10 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full backdrop-blur-sm">💶 Min. {MIN_ORDER}€</div>
+              <div className="flex items-center gap-1 text-[11px] sm:text-sm bg-white/10 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full backdrop-blur-sm">⭐ Fidélité</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MAIN ── */}
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        {role==='admin'&&<AdminDashboard orders={orders} catalog={catalog} setCatalog={setCatalog} setOrders={setOrders} notify={notify}/>}
+
+        {role==='client'&&view==='catalog'&&(
+          <div>
+            {/* Categories */}
+            <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 mb-4 scroll-hide">
+              {CATEGORIES.map(cat=>(
+                <button key={cat} onClick={()=>setActiveCat(cat)}
+                  className={`flex-shrink-0 flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-sm font-semibold border-2 transition-all ${activeCat===cat?'bg-partenope-red border-partenope-red text-white shadow-md':'bg-white border-gray-200 text-gray-600 active:border-partenope-red/50'}`}>
+                  <span>{CAT_ICONS[cat]}</span><span>{cat}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile search */}
+            <div className="md:hidden mb-3">
+              <div className="relative">
+                <input type="text" placeholder="Rechercher..." value={search} onChange={e=>setSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:border-partenope-red focus:outline-none bg-white"/>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-xs text-gray-500">{filteredProducts.length} produit{filteredProducts.length!==1?'s':''}</div>
+              {cartTotal>0&&cartTotal<MIN_ORDER&&(
+                <div className="text-[10px] bg-amber-50 border border-amber-200 text-amber-700 px-2 py-1 rounded-full font-medium">
+                  Encore {(MIN_ORDER-cartTotal).toFixed(0)}€
+                </div>
+              )}
+            </div>
+
+            {filteredProducts.length===0?(
+              <div className="text-center py-12">
+                <div className="text-4xl mb-3">🔍</div>
+                <div className="text-gray-500 font-semibold text-sm">Aucun produit trouvé</div>
+                <button onClick={()=>{setSearch('');setActiveCat('Tous')}} className="mt-3 text-partenope-red text-xs underline">Réinitialiser</button>
+              </div>
+            ):(
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
+                {filteredProducts.map(p=><ProductCard key={p.id} product={p} onAdd={addToCart}/>)}
+              </div>
+            )}
+
+            {cart.length>0&&(
+              <div className="mt-8 sm:mt-12 p-4 sm:p-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl sm:rounded-3xl border border-amber-100">
+                <h2 className="font-serif text-lg sm:text-xl font-bold text-amber-900 mb-3">✨ Complétez votre commande</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                  {getUpsell(cart,orders.filter(o=>o.restaurantId===currentRestaurant.id),catalog).map(p=>(
+                    <ProductCard key={p.id} product={p} onAdd={addToCart} compact/>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {role==='client'&&view==='orders'&&(
+          <div>
+            <h2 className="font-serif text-xl sm:text-2xl font-bold text-gray-900 mb-4">Mes commandes</h2>
+            <OrderHistory orders={orders.filter(o=>o.restaurantId===currentRestaurant.id)} onRepeatOrder={handleRepeatOrder} onTrack={(id)=>setTrackingId(id)}/>
+          </div>
+        )}
+
+        {role==='client'&&view==='loyalty'&&(
+          <div>
+            <h2 className="font-serif text-xl sm:text-2xl font-bold text-gray-900 mb-4">Programme de fidélité</h2>
+            <LoyaltyDashboard loyalty={loyalty}/>
+          </div>
+        )}
+      </main>
+
+      {/* ── MOBILE BOTTOM NAV (client only) ── */}
+      {role==='client'&&!showCart&&!showCheckout&&!trackingId&&(
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 bottom-nav">
+          <div className="flex items-center justify-around py-1.5">
+            {[['catalog','🏪','Catalogue'],['orders','📦','Commandes'],['loyalty','⭐','Fidélité']].map(([v,ico,label])=>(
+              <button key={v} onClick={()=>setView(v)} className={`flex flex-col items-center gap-0.5 px-3 py-1 ${view===v?'text-partenope-red':'text-gray-400'}`}>
+                <span className="text-lg">{ico}</span>
+                <span className="text-[10px] font-semibold">{label}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      {/* Desktop nav (client) */}
+      {role==='client'&&(
+        <div className="hidden sm:block sticky top-[52px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4">
+            <nav className="flex items-center gap-1 py-1.5">
+              {[['catalog','🏪 Catalogue'],['orders','📦 Mes commandes'],['loyalty','⭐ Fidélité']].map(([v,l])=>(
+                <button key={v} onClick={()=>setView(v)} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${view===v?'bg-partenope-red text-white shadow-sm':'text-gray-600 hover:bg-gray-100'}`}>{l}</button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {showCart&&<CartSidebar cart={cart} setCart={setCart} catalog={catalog} orderHistory={orders.filter(o=>o.restaurantId===currentRestaurant.id)} loyalty={loyalty} onCheckout={handleCheckout} onClose={()=>setShowCart(false)}/>}
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-400 py-6 sm:py-8 mt-8 sm:mt-16 hidden sm:block">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-partenope-red flex items-center justify-center"><span className="text-white font-bold font-serif text-sm">P</span></div>
+              <span className="font-serif text-white font-bold">Partenope</span>
+            </div>
+            <div className="text-xs text-center">Produits alimentaires italiens · Paris & IDF</div>
+            <div className="flex items-center gap-2 text-xs"><span>🇮🇹 Depuis 1987</span><span>·</span><span>📞 01 23 45 67 89</span></div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
