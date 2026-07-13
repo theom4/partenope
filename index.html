@@ -842,14 +842,14 @@ function TrackingView({orderId,orders,onClose}){
 
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 function App(){
-  const[catalog,setCatalog]=useState(()=>S.get('ptn_catalog',INITIAL_CATALOG));
+  const[catalog,setCatalog]=useState(()=>S.get('ptn2_catalog',INITIAL_CATALOG));
   const[orders,setOrders]=useState(()=>{
-    const saved=S.get('ptn_orders',null);
+    const saved=S.get('ptn2_orders',null);
     if(saved&&saved.length>0)return saved;
     return generateSeedOrders(INITIAL_CATALOG);
   });
-  const[cart,setCart]=useState(()=>S.get('ptn_cart',[]));
-  const[loyalty,setLoyalty]=useState(()=>S.get('ptn_loyalty',{points:120,history:[{desc:'Commande bienvenue',points:120,date:new Date(Date.now()-86400000*5).toISOString()}]}));
+  const[cart,setCart]=useState(()=>S.get('ptn2_cart',[]));
+  const[loyalty,setLoyalty]=useState(()=>S.get('ptn2_loyalty',{points:120,history:[{desc:'Commande bienvenue',points:120,date:new Date(Date.now()-86400000*5).toISOString()}]}));
   const[currentRestaurant]=useState(MOCK_RESTAURANTS[0]);
 
   const[role,setRole]=useState('client');
@@ -862,10 +862,10 @@ function App(){
   const[cartPulse,setCartPulse]=useState(false);
   const{notifs,add:notify}=useNotifications();
 
-  useEffect(()=>{S.set('ptn_catalog',catalog)},[catalog]);
-  useEffect(()=>{S.set('ptn_orders',orders)},[orders]);
-  useEffect(()=>{S.set('ptn_cart',cart)},[cart]);
-  useEffect(()=>{S.set('ptn_loyalty',loyalty)},[loyalty]);
+  useEffect(()=>{S.set('ptn2_catalog',catalog)},[catalog]);
+  useEffect(()=>{S.set('ptn2_orders',orders)},[orders]);
+  useEffect(()=>{S.set('ptn2_cart',cart)},[cart]);
+  useEffect(()=>{S.set('ptn2_loyalty',loyalty)},[loyalty]);
 
   // Simulate delivery progress
   useEffect(()=>{
