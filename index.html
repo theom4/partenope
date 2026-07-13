@@ -922,11 +922,11 @@ function App(){
     <div className="min-h-screen bg-partenope-cream">
       <NotificationStack notifs={notifs}/>
       <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
-          <img src="images/logo.png" alt="Partenope Logo" className="h-8 w-auto object-contain" />
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+          <img src="images/logo.png" alt="Partenope Logo" className="-ml-2 sm:-ml-4 h-8 w-auto object-contain" />
         </div>
       </header>
-      <main className="max-w-7xl mx-auto"><TrackingView orderId={trackingId} orders={orders} onClose={()=>setTrackingId(null)}/></main>
+      <main className="max-w-[1600px] mx-auto"><TrackingView orderId={trackingId} orders={orders} onClose={()=>setTrackingId(null)}/></main>
     </div>
   );
 
@@ -935,11 +935,11 @@ function App(){
     <div className="min-h-screen bg-partenope-cream">
       <NotificationStack notifs={notifs}/>
       <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
-          <img src="images/logo.png" alt="Partenope Logo" className="h-8 w-auto object-contain" />
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+          <img src="images/logo.png" alt="Partenope Logo" className="-ml-2 sm:-ml-4 h-8 w-auto object-contain" />
         </div>
       </header>
-      <main className="max-w-7xl mx-auto">
+      <main className="max-w-[1600px] mx-auto">
         <CheckoutView cart={cart} catalog={catalog} orderHistory={orders.filter(o=>o.restaurantId===currentRestaurant.id)} loyalty={loyalty} onConfirm={handleConfirmOrder} onBack={()=>{setShowCheckout(false);setShowCart(true)}}/>
       </main>
     </div>
@@ -951,11 +951,11 @@ function App(){
 
       {/* ── HEADER ── */}
       <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-4">
           <div className="flex items-center justify-between py-2 sm:py-3">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <img src="images/logo.png" alt="Partenope Logo" className="h-10 sm:h-12 w-auto object-contain" />
+              <img src="images/logo.png" alt="Partenope Logo" className="-ml-2 sm:-ml-4 h-10 sm:h-12 w-auto object-contain" />
               <div className="hidden sm:block">
                 <div className="text-[10px] text-gray-400 self-end mb-1 ml-1">Distribution Alimentaire Italienne</div>
               </div>
@@ -1007,7 +1007,7 @@ function App(){
         >
           <div className="absolute inset-0 bg-blue-900/40 mix-blend-multiply"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/40 to-transparent"></div>
-          <div className="relative max-w-7xl mx-auto z-10">
+          <div className="relative max-w-[1600px] mx-auto z-10">
             <div className="flex items-end gap-3 mb-2">
               <div>
                 <h1 className="font-serif text-xl sm:text-3xl md:text-4xl font-bold leading-tight">L'Italie dans votre cuisine</h1>
@@ -1024,7 +1024,7 @@ function App(){
       )}
 
       {/* ── MAIN ── */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <main className="max-w-[1600px] mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {role==='admin'&&<AdminDashboard orders={orders} catalog={catalog} setCatalog={setCatalog} setOrders={setOrders} notify={notify}/>}
 
         {role==='client'&&view==='catalog'&&(
@@ -1114,7 +1114,7 @@ function App(){
       {/* Desktop nav (client) */}
       {role==='client'&&(
         <div className="hidden sm:block sticky top-[52px] z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-[1600px] mx-auto px-4">
             <nav className="flex items-center gap-1 py-1.5">
               {[['catalog','🏪 Catalogue'],['orders','📦 Mes commandes'],['loyalty','⭐ Fidélité']].map(([v,l])=>(
                 <button key={v} onClick={()=>setView(v)} className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-all ${view===v?'bg-partenope-red text-white shadow-sm':'text-gray-600 hover:bg-gray-100'}`}>{l}</button>
@@ -1128,7 +1128,7 @@ function App(){
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-6 sm:py-8 mt-8 sm:mt-16 hidden sm:block">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-[1600px] mx-auto px-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-partenope-red flex items-center justify-center"><span className="text-white font-bold font-serif text-sm">P</span></div>
