@@ -58,50 +58,41 @@ const S={
 };
 
 // ─── PRODUCT IMAGE GENERATOR (SVG data URI with emoji + gradient) ────────────
-function makeImg(emoji, color1, color2) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
-    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${color1}"/><stop offset="100%" stop-color="${color2}"/></linearGradient></defs>
-    <rect width="300" height="300" fill="url(#g)"/>
-    <text x="150" y="165" font-size="100" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
-  </svg>`;
-  return 'data:image/svg+xml,' + encodeURIComponent(svg);
-}
-
 const IMG = {
-  mozzarella: makeImg('🧀','#fff8e1','#ffecb3'),
-  burrata: makeImg('🥛','#fafafa','#f5f5f5'),
-  ricotta: makeImg('🍚','#fff3e0','#ffe0b2'),
-  gorgonzola: makeImg('🧀','#e3f2fd','#bbdefb'),
-  mascarpone: makeImg('🍮','#fce4ec','#f8bbd0'),
-  scamorza: makeImg('🧀','#fff8e1','#ffe082'),
-  provolone: makeImg('🧀','#fff9c4','#fff176'),
-  prosciutto: makeImg('🥩','#fbe9e7','#ffccbc'),
-  parmigiano: makeImg('🧀','#fff8e1','#ffd54f'),
-  salame: makeImg('🍖','#ffebee','#ef9a9a'),
-  bresaola: makeImg('🥩','#fce4ec','#e57373'),
-  mortadella: makeImg('🌭','#f3e5f5','#ce93d8'),
-  speck: makeImg('🥓','#efebe9','#bcaaa4'),
-  pancetta: makeImg('🥓','#fff3e0','#ffcc80'),
-  pasta: makeImg('🍝','#fff3e0','#ffe0b2'),
-  spaghetti: makeImg('🍝','#fffde7','#fff9c4'),
-  penne: makeImg('🍝','#fff8e1','#ffecb3'),
-  tagliatelle: makeImg('🍝','#fbe9e7','#ffccbc'),
-  rigatoni: makeImg('🍝','#fff3e0','#ffe082'),
-  sanpellegrino: makeImg('💧','#e3f2fd','#90caf9'),
-  prosecco: makeImg('🍾','#f3e5f5','#e1bee7'),
-  vino: makeImg('🍷','#fce4ec','#ef9a9a'),
-  limoncello: makeImg('🍋','#fffde7','#fff59d'),
-  acqua: makeImg('💧','#e0f7fa','#80deea'),
-  amaro: makeImg('🥃','#efebe9','#a1887f'),
-  aranciata: makeImg('🍊','#fff3e0','#ffb74d'),
-  sanmarzano: makeImg('🍅','#ffebee','#ef5350'),
-  olio: makeImg('🫒','#e8f5e9','#a5d6a7'),
-  pesto: makeImg('🌿','#e8f5e9','#81c784'),
-  passata: makeImg('🍅','#ffcdd2','#e57373'),
-  aceto: makeImg('🫗','#efebe9','#bcaaa4'),
-  tartufo: makeImg('🍄','#efebe9','#8d6e63'),
-  caponata: makeImg('🍆','#f3e5f5','#ba68c8'),
-  nduja: makeImg('🌶️','#ffebee','#e53935'),
+  mozzarella: 'https://images.unsplash.com/photo-1590059524673-9366df0af91d?auto=format&fit=crop&w=400&q=80',
+  burrata: 'https://images.unsplash.com/photo-1606555140816-09e99eb34a17?auto=format&fit=crop&w=400&q=80',
+  ricotta: 'https://images.unsplash.com/photo-1559561853-08451507cbe7?auto=format&fit=crop&w=400&q=80',
+  gorgonzola: 'https://images.unsplash.com/photo-1452195100486-9cc805987862?auto=format&fit=crop&w=400&q=80',
+  mascarpone: 'https://images.unsplash.com/photo-1582293041079-7814c2f12063?auto=format&fit=crop&w=400&q=80',
+  scamorza: 'https://images.unsplash.com/photo-1632516428751-f2f254921609?auto=format&fit=crop&w=400&q=80',
+  provolone: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=400&q=80',
+  prosciutto: 'https://images.unsplash.com/photo-1522068804005-7281ce9f4305?auto=format&fit=crop&w=400&q=80',
+  parmigiano: 'https://images.unsplash.com/photo-1589881383745-f09dce06edeb?auto=format&fit=crop&w=400&q=80',
+  salame: 'https://images.unsplash.com/photo-1542831826-6d60d032f22b?auto=format&fit=crop&w=400&q=80',
+  bresaola: 'https://images.unsplash.com/photo-1628268909376-e8c4dfbf6f49?auto=format&fit=crop&w=400&q=80',
+  mortadella: 'https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&w=400&q=80',
+  speck: 'https://images.unsplash.com/photo-1524182576066-193ebde442dc?auto=format&fit=crop&w=400&q=80',
+  pancetta: 'https://images.unsplash.com/photo-1602491453631-e2a5ad90a131?auto=format&fit=crop&w=400&q=80',
+  pasta: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=400&q=80',
+  spaghetti: 'https://images.unsplash.com/photo-1589227365533-cee630bd59bd?auto=format&fit=crop&w=400&q=80',
+  penne: 'https://images.unsplash.com/photo-1621510456681-2330135e5871?auto=format&fit=crop&w=400&q=80',
+  tagliatelle: 'https://images.unsplash.com/photo-1595295333158-4742f28fbd85?auto=format&fit=crop&w=400&q=80',
+  rigatoni: 'https://images.unsplash.com/photo-1621510456681-2330135e5871?auto=format&fit=crop&w=400&q=80',
+  sanpellegrino: 'https://images.unsplash.com/photo-1593006093259-8edabcb7206f?auto=format&fit=crop&w=400&q=80',
+  prosecco: 'https://images.unsplash.com/photo-1590189182193-1fd44f2b4048?auto=format&fit=crop&w=400&q=80',
+  vino: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=400&q=80',
+  limoncello: 'https://images.unsplash.com/photo-1527661591475-527312dd65f5?auto=format&fit=crop&w=400&q=80',
+  acqua: 'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=400&q=80',
+  amaro: 'https://images.unsplash.com/photo-1560508180-04f1def873a1?auto=format&fit=crop&w=400&q=80',
+  aranciata: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80',
+  sanmarzano: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=400&q=80',
+  olio: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=400&q=80',
+  pesto: 'https://images.unsplash.com/photo-1599313261623-6e216c39f28d?auto=format&fit=crop&w=400&q=80',
+  passata: 'https://images.unsplash.com/photo-1558223689-0120155b417e?auto=format&fit=crop&w=400&q=80',
+  aceto: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80',
+  tartufo: 'https://images.unsplash.com/photo-1582046559560-6c825a07530f?auto=format&fit=crop&w=400&q=80',
+  caponata: 'https://images.unsplash.com/photo-1580216641887-1e5b121966a3?auto=format&fit=crop&w=400&q=80',
+  nduja: 'https://images.unsplash.com/photo-1591870196238-a28a2b535d57?auto=format&fit=crop&w=400&q=80'
 };
 
 // ─── CATALOG ──────────────────────────────────────────────────────────────────
